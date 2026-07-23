@@ -11,7 +11,7 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    const apiKey = "[REDACTED_API_KEY]";
+    const apiKey = process.env.NEXT_PUBLIC_TRANSAK_API_KEY || "[REDACTED_API_KEY]";
 
     // 1. Refresh partner access token
     const tokenRes = await fetch("https://api-stg.transak.com/partners/api/v2/refresh-token", {
