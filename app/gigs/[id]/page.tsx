@@ -1213,7 +1213,7 @@ export default function GigDetailPage() {
 
               {/* Button to open widget */}
               <a
-                href={`https://staging-global.transak.com/?apiKey=${process.env.NEXT_PUBLIC_TRANSAK_API_KEY || "[REDACTED_API_KEY]"}&cryptoCurrencyList=USDC&network=base&fiatCurrency=USD&fiatAmount=${gig.priceUSD * groupSize}&walletAddress=${transakWallet}`}
+                href={`https://staging-global.transak.com/?apiKey=${process.env.NEXT_PUBLIC_TRANSAK_API_KEY || "[REDACTED_API_KEY]"}&referrerDomain=${encodeURIComponent(typeof window !== "undefined" ? window.location.origin : "http://localhost:3000")}&cryptoCurrencyCode=USDC&network=base&fiatCurrency=USD&fiatAmount=${gig.priceUSD * groupSize}&walletAddress=${transakWallet}&disableWalletAddressForm=true&email=${encodeURIComponent(session?.user?.email || "")}&productsAvailed=BUY`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full bg-[#3c00b3] hover:bg-[#2b0080] text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 text-xs shadow-md shadow-primary/25 cursor-pointer text-center"
