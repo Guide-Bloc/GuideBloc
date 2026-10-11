@@ -259,17 +259,17 @@ export default function TeamPage() {
                 </div>
 
                 <p className="text-dark-300 text-sm leading-relaxed mb-6">
-                  Orchestrates global travel demand sensing with emphasis on Japan and premier destinations. Continuously synthesizes traveler feedback, dynamically curates high-performing local tours, and personalizes AI concierge recommendations.
+                  Orchestrates global travel demand sensing across premier international destinations. Continuously synthesizes traveler feedback, dynamically curates high-performing local tours, and personalizes AI concierge recommendations.
                 </p>
 
                 <div className="space-y-3 mb-6 bg-dark-950/60 p-4 rounded-2xl border border-dark-800 text-xs text-dark-300">
                   <div className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-violet-400 flex-shrink-0 mt-0.5" />
-                    <span><strong>Japan Tourism Trend Sensing:</strong> Analyzes Tokyo, Kyoto, Fuji, and Osaka interest in real time.</span>
+                    <span><strong>Global Tourism Trend Sensing:</strong> Analyzes international destinations (Paris, Bali, Rome, Tokyo, New York) in real time.</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-violet-400 flex-shrink-0 mt-0.5" />
-                    <span><strong>AI Travel Concierge Integration:</strong> Matches tourists with vetted local Japanese guides.</span>
+                    <span><strong>AI Travel Concierge Integration:</strong> Matches tourists with vetted local guides worldwide.</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-violet-400 flex-shrink-0 mt-0.5" />
@@ -298,7 +298,7 @@ export default function TeamPage() {
             Explore GuideBloc Experiences
           </h2>
           <p className="text-dark-500 text-sm max-w-xl mx-auto leading-relaxed">
-            Discover vetted local tours across Japan or read more about our vision for decentralized travel commerce.
+            Discover vetted local tours across the globe or read more about our vision for decentralized travel commerce.
           </p>
           <div className="flex justify-center gap-4 pt-2">
             <Link href="/about" className="btn-outline py-2.5 px-5 rounded-xl text-xs font-bold inline-flex items-center gap-1.5">

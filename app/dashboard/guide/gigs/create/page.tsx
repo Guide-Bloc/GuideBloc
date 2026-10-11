@@ -111,11 +111,11 @@ export default function CreateGigPage() {
   const [packages, setPackages] = useState<TourPackageItem[]>([
     {
       id: "pkg-1",
-      name: "Basic Tour Package",
-      priceUSD: 45,
-      description: "Standard guided walking experience with local guide",
-      includes: ["Licensed Local Tour Guide", "Route & Direction Assistance", "Bottled Mineral Water"],
-      excludes: ["Personal Shopping Expenses", "Alcoholic Beverages", "Hotel Pick-up & Drop-off"],
+      name: "",
+      priceUSD: "",
+      description: "",
+      includes: [],
+      excludes: [],
     },
   ]);
   const [packagePerkInput, setPackagePerkInput] = useState<Record<number, string>>({});
@@ -242,29 +242,15 @@ export default function CreateGigPage() {
       return;
     }
     const newId = `pkg-${Date.now()}`;
-    const basePrice = parseFloat(String(packages[0]?.priceUSD || 45)) || 45;
-    const multiplier = packages.length === 1 ? 1.5 : packages.length === 2 ? 2.2 : 3.0;
-    const tierNames = ["Standard Package", "Comfort Transit Package", "VIP All-Inclusive Package"];
-    const tierInclusions = [
-      ["Licensed Local Tour Guide", "Public Train / Bus Pass", "Local Food Tasting"],
-      ["Licensed Local Tour Guide", "Private AC Van Transport", "Buffet Lunch / Food Tasting", "Bottled Mineral Water"],
-      ["Licensed Local Tour Guide", "Private AC Van Transport", "Buffet Lunch / Food Tasting", "Temple / Museum Admission Tickets", "Hotel Pickup & Drop", "Photography Assistance"]
-    ];
-    const tierExclusions = [
-      ["Personal Shopping Expenses", "Alcoholic Beverages", "Hotel Pick-up & Drop-off"],
-      ["Personal Shopping Expenses", "Alcoholic Beverages"],
-      ["Personal Shopping Expenses"]
-    ];
-
     setPackages([
       ...packages,
       {
         id: newId,
-        name: tierNames[packages.length - 1] || `Tier ${packages.length + 1} Package`,
-        priceUSD: Math.round(basePrice * multiplier * 100) / 100,
-        description: "Includes extended transport, meals, or attraction entry tickets",
-        includes: tierInclusions[packages.length - 1] || ["Licensed Local Tour Guide", "Transportation Included"],
-        excludes: tierExclusions[packages.length - 1] || ["Personal Shopping Expenses"],
+        name: "",
+        priceUSD: "",
+        description: "",
+        includes: [],
+        excludes: [],
       },
     ]);
     toast.success(`Package ${packages.length + 1} added!`);

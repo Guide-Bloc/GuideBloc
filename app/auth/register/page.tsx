@@ -7,6 +7,7 @@ import { Mail, Lock, User, Eye, EyeOff, MapPin, Loader2 } from "lucide-react";
 import { GlobeIcon, Crosshair2Icon } from "@radix-ui/react-icons";
 import Navbar from "@/components/layout/Navbar";
 import toast from "react-hot-toast";
+import { signIn } from "next-auth/react";
 import { COUNTRIES } from "@/lib/countries";
 import TurnstileCaptcha from "@/components/auth/TurnstileCaptcha";
 
@@ -59,8 +60,19 @@ function RegisterContent() {
         return;
       }
 
-      toast.success("Account created! Please sign in.");
-      router.push("/auth/login");
+      // Instant auto-login directly into dashboard
+      const signInRes = await signIn("credentials", {
+        email: form.email,
+        password: form.password,
+        redirect: false,
+      });
+
+      if (signInRes?.ok) {
+        const dest = form.role === "GUIDE" ? "/dashboard/guide/overview" : "/dashboard/tourist/bookings";
+        window.location.href = dest;
+      } else {
+        window.location.href = `/auth/login?role=${form.role.toLowerCase()}`;
+      }
     } catch {
       toast.error("Something went wrong");
       setLoading(false);

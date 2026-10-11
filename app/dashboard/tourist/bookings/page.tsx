@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { 
   CheckCircle, MapPin, Calendar, ExternalLink, Download, Loader2, 
   MessageSquare, Compass, X, Star, Upload, ChevronDown, Trash2, 
-  ShieldCheck, Clock, FileCheck, QrCode, AlertTriangle 
+  ShieldCheck, Clock, FileCheck, QrCode, AlertTriangle, Mail 
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -76,6 +76,7 @@ export default function TouristBookingsPage() {
   const [disputeReason, setDisputeReason] = useState("");
   const [disputePhoto, setDisputePhoto] = useState("");
   const [isSubmittingDispute, setIsSubmittingDispute] = useState(false);
+  const [resendingId, setResendingId] = useState<string | null>(null);
 
   useEffect(() => {
     const hidden = JSON.parse(localStorage.getItem("hidden_bookings") || "[]");
@@ -86,7 +87,7 @@ export default function TouristBookingsPage() {
       const params = new URLSearchParams(window.location.search);
       const completedId = params.get("completed");
       if (completedId) {
-        toast.success("🎉 Tour completion handshake verified! Escrow successfully released to guide.", { duration: 6000 });
+        toast.success("Tour completion handshake verified! Escrow successfully released to guide.", { duration: 6000 });
       }
     }
   }, []);
@@ -344,6 +345,27 @@ export default function TouristBookingsPage() {
     } catch (err) {
       console.error(err);
       toast.error("Error starting chat");
+    }
+  };
+
+  const handleResendEmail = async (booking: any) => {
+    try {
+      setResendingId(booking.id);
+      const toastId = toast.loading("Sending official transaction receipt to your email...");
+      const res = await fetch(`/api/bookings/${booking.id}/resend-receipt`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      toast.dismiss(toastId);
+      if (res.ok) {
+        toast.success(data.message || "Receipt successfully sent to your email!");
+      } else {
+        toast.error(data.message || "Failed to send receipt to email");
+      }
+    } catch {
+      toast.error("Network communication error");
+    } finally {
+      setResendingId(null);
     }
   };
 
@@ -863,6 +885,25 @@ export default function TouristBookingsPage() {
                                 className="w-full text-left px-4 py-2.5 text-xs text-dark-100 hover:bg-dark-800 flex items-center gap-2 cursor-pointer font-medium transition-colors"
                               >
                                 <Download className="w-3.5 h-3.5 text-dark-400" /> Download PDF Receipt
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  handleResendEmail(booking);
+                                  setOpenDropdownId(null);
+                                }}
+                                disabled={resendingId === booking.id}
+                                className="w-full text-left px-4 py-2.5 text-xs text-dark-100 hover:bg-dark-800 flex items-center gap-2 cursor-pointer font-medium transition-colors disabled:opacity-50"
+                              >
+                                {resendingId === booking.id ? (
+                                  <>
+                                    <Loader2 className="w-3.5 h-3.5 text-dark-400 animate-spin" /> Sending Receipt...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Mail className="w-3.5 h-3.5 text-dark-400" /> Resend to Email
+                                  </>
+                                )}
                               </button>
 
                               <button

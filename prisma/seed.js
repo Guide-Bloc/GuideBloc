@@ -53,7 +53,8 @@ async function main() {
   console.log("Default platform settings configured.");
 
   // 2. Create Super-Admin Rayhan
-  const adminPassword = await bcrypt.hash("[REDACTED_PASSWORD]", 10);
+  const initialPassword = process.env.ADMIN_INITIAL_PASSWORD || process.env.ADMIN_PASSWORD || "GuideBlocAdmin2026!";
+  const adminPassword = await bcrypt.hash(initialPassword, 10);
   const admin = await prisma.user.upsert({
     where: { email: "rayhan@guidebloc.com" },
     update: {
@@ -72,7 +73,7 @@ async function main() {
       language: [],
     },
   });
-  console.log(`Super-Admin account created: ${admin.email} (Password: [REDACTED_PASSWORD])`);
+  console.log(`Super-Admin account created: ${admin.email}`);
 
   console.log("Clean seeding completed successfully!");
 }

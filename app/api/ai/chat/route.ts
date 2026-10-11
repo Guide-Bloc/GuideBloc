@@ -67,29 +67,29 @@ export async function POST(req: Request) {
       .join("\n");
 
     // 4. Secure AI Persona & System Instructions (Tour Information Assistant)
-    const systemPrompt = `You are "AI Concierge", an institutional, knowledgeable Tour Discovery and Escrow Assistant for GuideBloc., specializing in verified tours across JAPAN (Tokyo, Kyoto, Osaka, Mount Fuji, and beyond).
+    const systemPrompt = `You are "AI Concierge", an institutional, knowledgeable Tour Discovery and Escrow Assistant for GuideBloc, specializing in verified tours across premier global destinations (Paris, Bali, Rome, Tokyo, New York, Swiss Alps, and beyond).
 
 ROLE & BOUNDARIES (CRITICAL):
 - You act strictly as an INFORMATIVE GUIDE (Tour Finder & Travel Information Assistant).
 - You DO NOT automatically book tours, schedule appointments, or handle payments for the user in chat.
-- Your sole purpose is to help users discover matching tours in Japan, explore itineraries, learn about vetted local guides, and understand how GuideBloc.'s Avalanche Smart Contract Escrow guarantees their safety.
-- When users ask to book, schedule, or make an appointment (e.g., "make me an appointment"), explain that you are an information assistant, and guide them to browse the tour details and book directly on the official tour page on GuideBloc.!
+- Your sole purpose is to help users discover matching tours worldwide, explore itineraries, learn about vetted local guides, and understand how GuideBloc's Avalanche Smart Contract Escrow guarantees their payment safety.
+- When users ask to book, schedule, or make an appointment (e.g., "make me an appointment"), explain that you are an information assistant, and guide them to browse the tour details and book directly on the official tour page on GuideBloc.
 
-TARGET DESTINATION:
-- Primary focus is JAPAN (Tokyo, Kyoto, Osaka, Mount Fuji, Hokkaido, etc.). Highlight Japan's culture, temples, food tours, and vetted local guides.
-- If a user asks about other destinations like Bali, politely clarify that GuideBloc. specializes in verified tours in Japan, and offer to show top Japan tours.
+TARGET DESTINATIONS:
+- Worldwide coverage with top destinations including Paris (France), Bali (Indonesia), Rome (Italy), Tokyo (Japan), New York (USA), Swiss Alps (Switzerland), and more.
+- Highlight local culture, culinary experiences, scenic landmarks, and vetted local guides.
 
-YOUR VIBE:
-- Super casual, friendly, enthusiastic, and knowledgeable about Japanese travel and culture.
-- Use emojis (🎌, 🌸, 🏯, 🍣, 🗺️), keep it warm, helpful, and concise!
-- Respond in the same language the user speaks (English or Indonesian).
+TONE & STYLE:
+- Institutional, courteous, helpful, concise, and professional.
+- Do NOT use emojis. Strict plain text with standard markdown formatting only.
+- Respond in clear, professional English.
 
-HERE ARE VERIFIED TOURS IN JAPAN:
+HERE ARE CURRENT VERIFIED TOURS:
 ${toursContext}
 
 ACTION MECHANISM:
-- "SEARCH": When the user is looking for a tour, asking for recommendations, or asking about a city in Japan. Provide a search query string.
-- "NONE": When answering general questions about Japan, escrow safety, or travel tips.
+- "SEARCH": When the user is looking for a tour, asking for recommendations, or asking about a destination. Provide a search query string.
+- "NONE": When answering general questions about travel, escrow safety, or platform features.
 (Do not use "BOOK" or "PAY" - booking is handled directly by the user on the tour page).
 
 You MUST respond strictly in JSON matching the specified output schema. Do not prepend or append any explanation outside the JSON format.`;
@@ -185,13 +185,13 @@ You MUST respond strictly in JSON matching the specified output schema. Do not p
       }
     }
 
-    // 6. Smart Local Tour Information Engine (Focused on Japan tours)
+    // 6. Smart Local Tour Information Engine (Global Tours)
     const fallbackResponse = generateLocalKiraResponse(message, gigs);
     return NextResponse.json(fallbackResponse);
   } catch (error) {
     console.error("AI Chat route fatal error:", error);
     return NextResponse.json({
-      reply: "Welcome to GuideBloc.! 🎌 I am your AI Travel Concierge. Tell me which destination in Japan you'd like to explore (Tokyo, Kyoto, Osaka) and I'll find the best verified tours for you!",
+      reply: "Welcome to GuideBloc. I am your AI Travel Concierge. Tell me which destination you would like to explore (Paris, Bali, Rome, Tokyo, New York, Swiss Alps) and I will find verified tours for you.",
       action: "NONE",
     });
   }
@@ -199,7 +199,7 @@ You MUST respond strictly in JSON matching the specified output schema. Do not p
 
 /**
  * High-Intelligence Local Tour Information Assistant Engine
- * Focuses on Japan tours and informative guidance.
+ * Focuses on Global tours and informative guidance with zero emojis.
  */
 function generateLocalKiraResponse(message: string, gigs: any[]) {
   const lower = message.toLowerCase().trim();
@@ -214,24 +214,18 @@ function generateLocalKiraResponse(message: string, gigs: any[]) {
     lower.includes("reservasi") ||
     lower.includes("book")
   ) {
-    const japanGigs = gigs.filter(
-      (g) =>
-        (g.country || "").toLowerCase().includes("japan") ||
-        (g.location || "").toLowerCase().includes("kyoto") ||
-        (g.location || "").toLowerCase().includes("tokyo")
-    );
-    const top = japanGigs[0] || gigs[0];
+    const top = gigs[0];
 
     return {
-      reply: `I'm here as your **Tour Information Assistant** to help you search and explore the best local tours in Japan! 🎌✨\n\nI don't schedule appointments or process bookings automatically in the chat. To book a tour, simply click on the tour card below to view the itinerary, choose your preferred date & time, and book directly on GuideBloc. with Avalanche Smart Contract Escrow protection!`,
+      reply: `I am here as your Tour Information Assistant to help you explore verified local tours worldwide.\n\nI do not schedule appointments or process bookings automatically in the chat. To book a tour, browse the tour details below, select your preferred date, and proceed directly with Avalanche Smart Contract Escrow protection.`,
       action: "SEARCH",
       actionData: {
-        searchQuery: top ? (top.location || top.title) : "Kyoto",
+        searchQuery: top ? (top.location || top.title) : "Paris",
       },
     };
   }
 
-  // 2. Direct match with database gigs in Japan
+  // 2. Direct match with database gigs worldwide
   const matchedGigs = gigs.filter((g) => {
     const loc = (g.location || "").toLowerCase();
     const ctry = (g.country || "").toLowerCase();
@@ -243,7 +237,7 @@ function generateLocalKiraResponse(message: string, gigs: any[]) {
     const top = matchedGigs[0];
     const price = top.client_price || top.priceUSD;
     return {
-      reply: `I found an authentic local tour in Japan for you! 🎌🏯\n\n**${top.title}** in **${top.location}, ${top.country}** hosted by verified guide **${top.guide?.name || "Local Expert"}** ($${price} USD).\n\nCheck out the tour details below to explore the itinerary and book directly!`,
+      reply: `I found an authentic verified tour for you.\n\n**${top.title}** in **${top.location}, ${top.country}** hosted by verified guide **${top.guide?.name || "Local Expert"}** ($${price} USD).\n\nCheck out the tour details below to explore the itinerary and book directly.`,
       action: "SEARCH",
       actionData: {
         searchQuery: top.location || top.title,
@@ -251,17 +245,56 @@ function generateLocalKiraResponse(message: string, gigs: any[]) {
     };
   }
 
-  // 3. Japan / Tokyo / Kyoto / Osaka inquiry
+  // 3. Global destination inquiries
+  if (lower.includes("paris") || lower.includes("france")) {
+    return {
+      reply: `Paris offers magnificent architecture, world-renowned gastronomy, and historic walks along the Seine. We have verified local guides ready to show you hidden gems across the city.\n\nBrowse through our verified tours below.`,
+      action: "SEARCH",
+      actionData: { searchQuery: "Paris" },
+    };
+  }
+
+  if (lower.includes("bali") || lower.includes("indonesia")) {
+    return {
+      reply: `Bali is renowned for its lush jungle sanctuaries, waterfall treks, and rich cultural heritage. Our vetted guides provide authentic, private explorations.\n\nBrowse through our verified Bali tours below.`,
+      action: "SEARCH",
+      actionData: { searchQuery: "Bali" },
+    };
+  }
+
+  if (lower.includes("rome") || lower.includes("italy")) {
+    return {
+      reply: `Rome offers incredible ancient history, iconic landmarks like the Colosseum, and vibrant culinary neighborhoods. Our local guides ensure a seamless, private tour experience.\n\nBrowse through our verified Rome tours below.`,
+      action: "SEARCH",
+      actionData: { searchQuery: "Rome" },
+    };
+  }
+
+  if (lower.includes("swiss") || lower.includes("switzerland") || lower.includes("zermatt") || lower.includes("alps")) {
+    return {
+      reply: `The Swiss Alps feature majestic mountain landscapes, glacier valleys, and panoramic hiking trails near Zermatt and the Matterhorn.\n\nBrowse through our verified Alpine tours below.`,
+      action: "SEARCH",
+      actionData: { searchQuery: "Zermatt" },
+    };
+  }
+
+  if (lower.includes("new york") || lower.includes("nyc") || lower.includes("usa") || lower.includes("manhattan")) {
+    return {
+      reply: `New York City features world-famous skyline views, iconic cultural districts, and culinary walking tours through historic neighborhoods.\n\nBrowse through our verified New York tours below.`,
+      action: "SEARCH",
+      actionData: { searchQuery: "New York" },
+    };
+  }
+
   if (
     lower.includes("japan") ||
     lower.includes("tokyo") ||
     lower.includes("kyoto") ||
     lower.includes("osaka") ||
-    lower.includes("jepang") ||
     lower.includes("fuji")
   ) {
     return {
-      reply: `Konnichiwa! 🎌🏯 Japan is our premier destination! We have verified local guides ready for cultural temple tours, hidden alley dining, and scenic castle explorations in Kyoto & Tokyo.\n\nBrowse through our verified Japan tours below to find your perfect experience!`,
+      reply: `Japan is an incredible destination with rich heritage, vibrant cityscapes in Tokyo, and historic cultural sites in Kyoto.\n\nBrowse through our verified tours in Japan below.`,
       action: "SEARCH",
       actionData: {
         searchQuery: lower.includes("tokyo") ? "Tokyo" : "Kyoto",
@@ -269,18 +302,7 @@ function generateLocalKiraResponse(message: string, gigs: any[]) {
     };
   }
 
-  // 4. Bali / Non-Japan inquiry (Redirect politely to Japan)
-  if (lower.includes("bali") || lower.includes("indonesia")) {
-    return {
-      reply: `GuideBloc. specializes primarily in authentic local experiences across **Japan** (Tokyo, Kyoto, Osaka, and more)! 🎌🗻\n\nI can help you find amazing tours in Japan like traditional temple explorations in Kyoto or dynamic city tours in Tokyo. Would you like to check out our top tours in Japan?`,
-      action: "SEARCH",
-      actionData: {
-        searchQuery: "Kyoto",
-      },
-    };
-  }
-
-  // 5. Escrow and safety questions
+  // 4. Escrow and safety questions
   if (
     lower.includes("escrow") ||
     lower.includes("aman") ||
@@ -293,44 +315,38 @@ function generateLocalKiraResponse(message: string, gigs: any[]) {
     lower.includes("avalanche")
   ) {
     return {
-      reply: `At GuideBloc., every tour in Japan is 100% protected by **Avalanche Smart Contract Escrow** 🛡️🔒!\n\n1. When you book a tour on the tour page, your payment (USDC/USDT) is safely locked on-chain.\n2. The guide **cannot** take your funds early.\n3. Payment is released to the guide **only after you meet in person and confirm your tour is completed**.\n\nZero advance payment risk, zero chargeback scams, pure peace of mind!`,
+      reply: `At GuideBloc, every booking is 100% protected by Avalanche Smart Contract Escrow.\n\n1. When you book a tour, your payment (USDC/USDT) is securely locked on-chain in escrow.\n2. The guide cannot access the funds prematurely.\n3. Funds are released to the guide only after the tour is successfully completed.\n\nZero advance payment risk, zero chargeback fraud, complete transparency.`,
       action: "NONE",
     };
   }
 
-  // 6. Questions about becoming a guide
+  // 5. Questions about becoming a guide
   if (lower.includes("guide") || lower.includes("pemandu") || lower.includes("daftar guide") || lower.includes("earning")) {
     return {
-      reply: `Interested in becoming a local guide in Japan? 🎒🗺️ GuideBloc. offers local guides 90% direct earnings paid instantly in stablecoins (USDC/USDT) with **zero fraud or chargeback risk**!\n\nYou can click **Become a Tour Guide** in the navigation bar to register and list your custom tours!`,
+      reply: `Interested in becoming a local guide? GuideBloc provides tour guides with 90% direct earnings settled instantly in stablecoins (USDC/USDT) with zero dispute fraud.\n\nYou can click "Become a Tour Guide" in the navigation bar to register and list your tours worldwide.`,
       action: "NONE",
     };
   }
 
-  // 7. Greetings or test messages
+  // 6. Greetings or test messages
   if (lower === "test" || lower === "hi" || lower === "halo" || lower === "hello" || lower === "p" || lower.includes("kira") || lower.includes("concierge")) {
     return {
-      reply: `Welcome to GuideBloc.! 🎌 I am your **AI Travel Concierge**. I am here to help you search and discover verified local tours and authentic experiences across **Japan** (Tokyo, Kyoto, Osaka, Mount Fuji, and beyond) 🏯🌸.\n\nWhich destination or travel experience can I assist you with today?`,
+      reply: `Welcome to GuideBloc. I am your AI Travel Concierge. I am here to help you discover verified local tours and authentic experiences across premier global destinations (Paris, Bali, Rome, Tokyo, New York, Swiss Alps).\n\nWhich destination or travel experience can I assist you with today?`,
       action: "NONE",
     };
   }
 
-  // 8. General search fallback focusing on Japan
-  const japanGigs = gigs.filter(
-    (g) =>
-      (g.country || "").toLowerCase().includes("japan") ||
-      (g.location || "").toLowerCase().includes("kyoto") ||
-      (g.location || "").toLowerCase().includes("tokyo")
-  );
-  const sampleGigs = (japanGigs.length > 0 ? japanGigs : gigs).slice(0, 2);
+  // 7. General search fallback focusing on top tours
+  const sampleGigs = gigs.slice(0, 3);
   const gigList = sampleGigs.length > 0
-    ? `\n\nTrending tours in Japan right now:\n` + sampleGigs.map((g) => `• **${g.title}** (${g.location})`).join("\n")
+    ? `\n\nTrending verified tours right now:\n` + sampleGigs.map((g) => `• **${g.title}** (${g.location}, ${g.country})`).join("\n")
     : "";
 
   return {
-    reply: `I'd love to help you find the best tour in Japan! 🎌✨ Tell me what kind of travel experience you have in mind (e.g. "Kyoto castle tour", "Tokyo food tour", or "temple visits").${gigList}`,
+    reply: `I would be pleased to help you find the best tour. Tell me what kind of travel experience you have in mind (e.g. "Paris food tour", "Bali waterfall trek", or "Rome historical walk").${gigList}`,
     action: "SEARCH",
     actionData: {
-      searchQuery: "Kyoto",
+      searchQuery: sampleGigs[0] ? sampleGigs[0].location : "Paris",
     },
   };
 }

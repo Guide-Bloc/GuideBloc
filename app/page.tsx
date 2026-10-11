@@ -46,39 +46,39 @@ import GigCard from "@/components/gigs/GigCard";
 const featuredDestinations = [
   {
     id: "1",
-    title: "Tokyo, Japan",
-    query: "Tokyo",
-    images: ["/assets/destinations/tokyo.webp"],
+    title: "Paris, France",
+    query: "Paris",
+    images: ["https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1200&q=80"],
   },
   {
     id: "2",
-    title: "Kyoto, Japan",
-    query: "Kyoto",
-    images: ["/assets/destinations/kyoto.webp"],
+    title: "Bali, Indonesia",
+    query: "Bali",
+    images: ["https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1200&q=80"],
   },
   {
     id: "3",
-    title: "Osaka, Japan",
-    query: "Osaka",
-    images: ["/assets/destinations/osaka.jpg"],
+    title: "Rome, Italy",
+    query: "Rome",
+    images: ["https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1200&q=80"],
   },
   {
     id: "4",
-    title: "Mount Fuji, Japan",
-    query: "Fuji",
-    images: ["/assets/destinations/fuji.webp"],
+    title: "Swiss Alps, Switzerland",
+    query: "Zermatt",
+    images: ["https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=1200&q=80"],
   },
   {
     id: "5",
-    title: "Hokkaido, Japan",
-    query: "Hokkaido",
-    images: ["/assets/destinations/hokkaido.webp"],
+    title: "New York, USA",
+    query: "New York",
+    images: ["https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=1200&q=80"],
   },
   {
     id: "6",
-    title: "Nara, Japan",
-    query: "Nara",
-    images: ["/assets/destinations/nara.webp"],
+    title: "Tokyo, Japan",
+    query: "Tokyo",
+    images: ["https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1200&q=80"],
   },
 ];
 
@@ -97,50 +97,50 @@ const fallbackReviews = [
   {
     id: "fb-1",
     rating: 5,
-    comment: "GuideBloc. made my Kyoto cultural tour completely worry-free. Funds stayed safely in the smart contract escrow until we finished our tour with Kenji. Truly game-changing!",
+    comment: "GuideBloc made my Paris architectural tour completely worry-free. Funds stayed safely in the smart contract escrow until we finished our private tour with Antoine. Truly game-changing!",
     reviewer: { name: "Sarah Chen", role: "TOURIST", country: "United States" },
-    gig: { title: "Kyoto Traditional Temples & Hidden Gardens", location: "Kyoto, Japan" }
+    gig: { title: "Paris Highlights & Secret Seine Walkway", location: "Paris, France" }
   },
   {
     id: "fb-2",
     rating: 5,
-    comment: "As a local guide in Tokyo, getting paid directly in USDT with zero payment disputes or 3-week chargeback worries is why I moved 100% of my private tours to GuideBloc..",
-    reviewer: { name: "Kenji Takahashi", role: "GUIDE", country: "Japan" },
-    gig: { title: "Tokyo Street Food & Shibuya Night Explorer", location: "Tokyo, Japan" }
+    comment: "As a local certified guide in Bali, getting paid directly in USDT with zero payment disputes or 3-week international bank delays is why I moved my private tours to GuideBloc.",
+    reviewer: { name: "Wayan Sudarta", role: "GUIDE", country: "Indonesia" },
+    gig: { title: "Ubud Sacred Waterfall & Hidden Jungle Trek", location: "Bali, Indonesia" }
   },
   {
     id: "fb-3",
     rating: 5,
-    comment: "Zero hidden bank exchange fees, instant booking confirmation, and total transparency. The peace of mind knowing the guide only gets paid after tour completion is unmatched.",
+    comment: "Zero hidden bank foreign exchange fees, instant booking confirmation, and total transparency. The peace of mind knowing the guide only gets paid after tour completion is unmatched.",
     reviewer: { name: "Marco Rossi", role: "TOURIST", country: "Italy" },
-    gig: { title: "Mount Fuji Panoramic Trekking & Hot Springs", location: "Yamanashi, Japan" }
+    gig: { title: "Colosseum & Ancient Rome Sunset Expedition", location: "Rome, Italy" }
   },
 ];
 
 const heroDestinations = [
   {
-    id: "fuji",
-    name: "Mount Fuji",
-    location: "Honshu, Japan",
-    image: "/assets/hero/hero-fuji.webp",
+    id: "paris",
+    name: "Eiffel Tower & Seine",
+    location: "Paris, France",
+    image: "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?auto=format&fit=crop&w=1920&q=85",
   },
   {
-    id: "kyoto",
-    name: "Yasaka Pagoda",
-    location: "Kyoto, Japan",
-    image: "/assets/hero/kyoto.jpg",
+    id: "bali",
+    name: "Ubud Tropical Sanctuary",
+    location: "Bali, Indonesia",
+    image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1920&q=85",
   },
   {
-    id: "tokyo",
-    name: "Tokyo Tower & Cityscape",
-    location: "Tokyo, Japan",
-    image: "/assets/hero/tokyo.jpg",
+    id: "rome",
+    name: "Colosseum & Ancient Rome",
+    location: "Rome, Italy",
+    image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1920&q=85",
   },
   {
-    id: "osaka",
-    name: "Osaka Castle",
-    location: "Osaka, Japan",
-    image: "/assets/hero/castle.jpg",
+    id: "swiss",
+    name: "Alpine Peaks & Valleys",
+    location: "Zermatt, Switzerland",
+    image: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=1920&q=85",
   },
 ];
 
@@ -186,7 +186,7 @@ export default function HomePage() {
       setAiQuery(aiInput);
       setAiInput("");
     } else {
-      setAiQuery("Tell me about verified tours in Japan!");
+      setAiQuery("Tell me about verified tours worldwide!");
     }
   };
 
@@ -248,7 +248,7 @@ export default function HomePage() {
               </div>
               <input
                 type="text"
-                placeholder="Search destinations or ask AI Concierge (e.g. Tokyo food tours, Kyoto temples)..."
+                placeholder="Search destinations or ask AI Concierge (e.g. Paris food tours, Bali excursions, Rome walk)..."
                 value={aiInput}
                 onChange={(e) => setAiInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -416,9 +416,9 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-12">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-dark-900 mb-3">
-                Top Destinations in Japan
+                Top Global Destinations
               </h2>
-              <p className="text-dark-500 text-lg">Explore iconic cities, cultural landmarks, and hidden gems across Japan</p>
+              <p className="text-dark-500 text-lg">Explore iconic cities, cultural landmarks, and hidden gems across the world</p>
             </div>
             <Link href="/explore" className="hidden md:inline-flex btn-outline items-center gap-2">
               View All Tours <ArrowRight className="w-4 h-4" />

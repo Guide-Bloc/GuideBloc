@@ -4,8 +4,8 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("Seeding Neon DB Cloud Database (Wiping sample gigs)...");
-  const hashedPassword = await bcrypt.hash("[REDACTED_PASSWORD]", 10);
+  const defaultPass = process.env.ADMIN_INITIAL_PASSWORD || process.env.ADMIN_PASSWORD || "GuideBlocAdmin2026!";
+  const hashedPassword = await bcrypt.hash(defaultPass, 10);
 
   // 1. Wipe all test bookings, reviews, messages, conversations, and sample gigs from Neon DB
   await prisma.booking.deleteMany({});

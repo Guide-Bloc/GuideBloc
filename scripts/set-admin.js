@@ -42,7 +42,7 @@ async function main() {
   console.log("Current users in NeonDB:", allUsers);
 
   const adminEmail = "rayhan@guidebloc.com";
-  const rawPassword = "[REDACTED_PASSWORD]";
+  const rawPassword = process.env.ADMIN_INITIAL_PASSWORD || process.env.ADMIN_PASSWORD || "GuideBlocAdmin2026!";
   const hashedPassword = await bcrypt.hash(rawPassword, 10);
 
   // 2. Remove or clean up previous admin accounts (e.g. zhaohan@guidebloc.com, etc.)

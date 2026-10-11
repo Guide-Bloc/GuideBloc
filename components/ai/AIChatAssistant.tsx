@@ -49,7 +49,7 @@ export default function AIChatAssistant({ initialQuery = "", onCloseInput }: { i
       setMessages([
         {
           sender: "ai",
-          text: `Welcome to GuideBloc.! 🎌 I am your **AI Travel Concierge**, dedicated to discovering verified local tours and cultural experiences across Japan (Tokyo, Kyoto, Osaka, Mount Fuji, and beyond).\n\nWhich destination or travel experience can I assist you with today?`,
+          text: `Welcome to GuideBloc. I am your **AI Travel Concierge**, dedicated to discovering verified local tours and authentic experiences across premier global destinations (Paris, Bali, Rome, Tokyo, New York, and beyond).\n\nWhich destination or travel experience can I assist you with today?`,
         },
       ]);
     }
@@ -228,7 +228,7 @@ export default function AIChatAssistant({ initialQuery = "", onCloseInput }: { i
           ...prev,
           {
             sender: "ai",
-            text: `ðŸŽ‰ **Success!** Payment of **${activePayment.amount} ${activePayment.token}** has been confirmed on-chain.\n\nTx Hash: \`${txHash.slice(0, 10)}...${txHash.slice(-8)}\`.\n\nYour guide has been notified and funds are securely locked in escrow. Have an amazing tour!`,
+            text: `**Success!** Payment of **${activePayment.amount} ${activePayment.token}** has been confirmed on-chain.\n\nTx Hash: \`${txHash.slice(0, 10)}...${txHash.slice(-8)}\`.\n\nYour guide has been notified and funds are securely locked in escrow. Have an amazing tour!`,
             paymentConfirmed: true,
           },
         ]);
@@ -283,7 +283,7 @@ export default function AIChatAssistant({ initialQuery = "", onCloseInput }: { i
                   <h4 className="font-display font-semibold text-white text-sm">AI Travel Concierge</h4>
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                    <span className="text-[10px] text-slate-300 font-medium tracking-wide">Japan Tour Discovery</span>
+                    <span className="text-[10px] text-slate-300 font-medium tracking-wide">Global Tour Discovery</span>
                     <span className="text-dark-600">·</span>
                     <a href="mailto:admin@guidebloc.com" className="text-[10px] text-cyan-400 hover:underline font-semibold">Support</a>
                   </div>
@@ -339,7 +339,7 @@ export default function AIChatAssistant({ initialQuery = "", onCloseInput }: { i
                     {/* 1. SEARCH ACTION RESULT CARDS */}
                     {msg.action === "SEARCH" && msg.gigs && msg.gigs.length > 0 && (
                       <div className="mt-3 space-y-2 border-t border-dark-700/60 pt-3">
-                        <p className="text-[11px] text-dark-400 uppercase font-bold tracking-wider">Matching Tours in Japan:</p>
+                        <p className="text-[11px] text-dark-400 uppercase font-bold tracking-wider">Matching Tours:</p>
                         {msg.gigs.map((g) => (
                           <div key={g.id} className="bg-dark-900 border border-dark-700 rounded-xl p-3 flex gap-3 hover:border-primary/50 transition-colors">
                             {g.images?.[0] && (
@@ -375,7 +375,7 @@ export default function AIChatAssistant({ initialQuery = "", onCloseInput }: { i
                   </div>
                   <div className="bg-dark-800 text-dark-300 rounded-2xl rounded-tl-none px-4 py-3 text-sm flex items-center gap-2 border border-dark-700/40">
                     <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                    <span>AI Concierge is searching verified tours in Japan...</span>
+                    <span>AI Concierge is searching verified tours worldwide...</span>
                   </div>
                 </div>
               )}
@@ -386,7 +386,7 @@ export default function AIChatAssistant({ initialQuery = "", onCloseInput }: { i
             <div className="p-4 border-t border-dark-700/50 bg-dark-950 flex gap-2">
               <input
                 type="text"
-                placeholder="Ask AI Concierge about tours in Japan (Tokyo, Kyoto, Osaka)..."
+                placeholder="Ask AI Concierge about tours worldwide (Paris, Bali, Rome, Tokyo)..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {

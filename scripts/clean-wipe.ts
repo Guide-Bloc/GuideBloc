@@ -41,12 +41,13 @@ async function fullWipe() {
   // 3. Wipe all users
   await deleteSafe("user");
 
-  console.log("✨ All old data wiped completely clean!");
+  console.log("All old data wiped completely clean.");
 
   // Hash clean passwords
-  const adminPasswordHash = await bcrypt.hash("[REDACTED_PASSWORD]", 10);
-  const guidePasswordHash = await bcrypt.hash("Guide123!", 10);
-  const touristPasswordHash = await bcrypt.hash("Tourist123!", 10);
+  const defaultPassword = process.env.ADMIN_INITIAL_PASSWORD || process.env.ADMIN_PASSWORD || "GuideBlocAdmin2026!";
+  const adminPasswordHash = await bcrypt.hash(defaultPassword, 10);
+  const guidePasswordHash = await bcrypt.hash(defaultPassword, 10);
+  const touristPasswordHash = await bcrypt.hash(defaultPassword, 10);
 
   // Seed pristine base accounts
   const admin = await prisma.user.create({

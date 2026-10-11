@@ -6,7 +6,8 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("Seeding local database with exact 3 accounts...");
 
-  const hashedPassword = await bcrypt.hash("[REDACTED_PASSWORD]", 12);
+  const defaultPass = process.env.ADMIN_INITIAL_PASSWORD || process.env.ADMIN_PASSWORD || "GuideBlocAdmin2026!";
+  const hashedPassword = await bcrypt.hash(defaultPass, 12);
 
   // 1. Admin: Rayhan
   const admin = await prisma.user.upsert({

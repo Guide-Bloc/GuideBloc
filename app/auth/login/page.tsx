@@ -38,26 +38,30 @@ function LoginContent() {
       try {
         const callbackUrl = searchParams.get("callbackUrl");
         if (callbackUrl) {
-          router.push(callbackUrl);
-        } else {
-          const roleRes = await fetch(`/api/auth/user-role?email=${encodeURIComponent(email)}`);
-          if (roleRes.ok) {
-            const { role } = await roleRes.json();
-            if (role === "ADMIN") {
-              router.push("/admin/dashboard");
-            } else if (role === "GUIDE") {
-              router.push("/dashboard/guide/overview");
-            } else {
-              router.push("/");
-            }
-          } else {
-            router.push("/");
-          }
+          window.location.href = callbackUrl;
+          return;
         }
+
+        // Fast role determination
+        const roleRes = await fetch(`/api/auth/user-role?email=${encodeURIComponent(email)}`);
+        let targetUrl = "/dashboard/tourist/bookings";
+        if (roleRes.ok) {
+          const { role } = await roleRes.json();
+          if (role === "ADMIN") {
+            targetUrl = "/admin/dashboard";
+          } else if (role === "GUIDE") {
+            targetUrl = "/dashboard/guide/overview";
+          } else {
+            targetUrl = "/dashboard/tourist/bookings";
+          }
+        } else if (isGuide) {
+          targetUrl = "/dashboard/guide/overview";
+        }
+
+        window.location.href = targetUrl;
       } catch {
-        router.push("/");
+        window.location.href = isGuide ? "/dashboard/guide/overview" : "/dashboard/tourist/bookings";
       }
-      router.refresh();
     }
   };
 

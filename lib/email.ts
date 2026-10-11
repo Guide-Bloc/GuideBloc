@@ -49,7 +49,8 @@ function getEmailLayout(title: string, contentHtml: string): string {
 export async function sendTransactionalEmail(payload: EmailPayload): Promise<boolean> {
   try {
     const apiKey = process.env.RESEND_API_KEY;
-    const fromEmail = process.env.EMAIL_FROM || "onboarding@resend.dev";
+    const rawFrom = process.env.EMAIL_FROM || "GuideBloc <noreply@guidebloc.com>";
+    const fromEmail = rawFrom.includes("<") ? rawFrom : `GuideBloc <${rawFrom}>`;
 
     if (apiKey) {
       console.log(`[Email] Sending real email to ${payload.to} via Resend.com API...`);
@@ -96,7 +97,7 @@ export async function sendTransactionalEmail(payload: EmailPayload): Promise<boo
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          from: `GuideBloc. <${fromEmail}>`,
+          from: fromEmail,
           to: payload.to,
           subject: payload.subject,
           html: payload.html,
@@ -180,8 +181,8 @@ const sentReceiptBookings = new Set<string>();
 /**
  * Triggered automatically upon a successful booking creation/escrow funding.
  */
-export async function triggerBookingSuccessEmail(bookingId: string, recipientEmail: string, gigTitle: string, amount: number, pdfBuffer?: Buffer) {
-  if (sentReceiptBookings.has(bookingId)) {
+export async function triggerBookingSuccessEmail(bookingId: string, recipientEmail: string, gigTitle: string, amount: number, pdfBuffer?: Buffer, forceSend?: boolean) {
+  if (!forceSend && sentReceiptBookings.has(bookingId)) {
     console.log(`[Email Deduplication] Receipt for booking ${bookingId} already sent. Skipping duplicate.`);
     return { success: true, skipped: true };
   }
