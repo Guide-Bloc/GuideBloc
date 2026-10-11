@@ -28,7 +28,7 @@ const config: HardhatUserConfig = {
     },
   },
   etherscan: {
-    apiKey: "[REDACTED_API_KEY]"
+    apiKey: process.env.SNOWTRACE_API_KEY || ""
   }
 };
 
