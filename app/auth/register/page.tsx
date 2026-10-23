@@ -7,6 +7,7 @@ import { Mail, Lock, User, Eye, EyeOff, Loader2, Home, Compass, UploadCloud, X, 
 import AuthVisualSide from "@/components/auth/AuthVisualSide";
 import toast from "react-hot-toast";
 import { signIn, useSession } from "next-auth/react";
+import TurnstileCaptcha from "@/components/auth/TurnstileCaptcha";
 
 function RegisterContent() {
   const router = useRouter();
@@ -43,6 +44,7 @@ function RegisterContent() {
   const [certFileName, setCertFileName] = useState<string>("");
   const [certFileSize, setCertFileSize] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [captchaVerified, setCaptchaVerified] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (file?: File) => {
@@ -127,6 +129,11 @@ function RegisterContent() {
       return;
     }
 
+    if (!captchaVerified) {
+      toast.error("Please complete the Cloudflare Turnstile verification.");
+      return;
+    }
+
     if (password.length < 8) {
       toast.error("Password must be at least 8 characters long.");
       return;
@@ -140,12 +147,13 @@ function RegisterContent() {
     setLoading(true);
 
     try {
+      const cleanEmail = email.trim().toLowerCase();
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name,
-          email,
+          name: name.trim(),
+          email: cleanEmail,
           password,
           role,
           certificationText:
@@ -163,7 +171,7 @@ function RegisterContent() {
 
       // Auto sign-in with credentials
       const signInRes = await signIn("credentials", {
-        email,
+        email: cleanEmail,
         password,
         redirect: false,
       });
@@ -483,11 +491,14 @@ function RegisterContent() {
                 </label>
               </div>
 
+              {/* Cloudflare Turnstile Captcha */}
+              <TurnstileCaptcha onVerify={setCaptchaVerified} />
+
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full mt-3 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-500/25 transition-all cursor-pointer disabled:opacity-50"
+                disabled={loading || !captchaVerified}
+                className="w-full mt-3 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-500/25 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {loading ? (
                   <>

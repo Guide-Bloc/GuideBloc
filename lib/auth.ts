@@ -17,20 +17,38 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Please enter both email and password.");
+        }
 
         try {
-          const user = await prisma.user.findUnique({
-            where: { email: credentials.email },
+          const cleanEmail = credentials.email.trim().toLowerCase();
+
+          const user = await prisma.user.findFirst({
+            where: {
+              email: {
+                equals: cleanEmail,
+                mode: "insensitive",
+              },
+            },
           });
 
-          if (!user || !user.password) return null;
+          if (!user) {
+            throw new Error("No account found with this email. Please check your spelling or sign up.");
+          }
+
           if (user.isBlocked) {
             throw new Error("Your account has been suspended by administration.");
           }
 
+          if (!user.password) {
+            throw new Error("This account was signed up via Google. Please click 'Continue with Google' to sign in.");
+          }
+
           const isValid = await bcrypt.compare(credentials.password, user.password);
-          if (!isValid) return null;
+          if (!isValid) {
+            throw new Error("Incorrect password. Please verify your password and try again.");
+          }
 
           return {
             id: user.id,
@@ -40,7 +58,7 @@ export const authOptions: NextAuthOptions = {
             avatar: user.avatar,
           };
         } catch (err: any) {
-          console.error("Authorize error:", err);
+          console.error("Authorize error:", err.message || err);
           throw err;
         }
       },
@@ -66,8 +84,14 @@ export const authOptions: NextAuthOptions = {
       // Always fetch the freshest user role, guideStatus and walletAddress from the database safely
       if (token.email) {
         try {
-          const dbUser = await prisma.user.findUnique({
-            where: { email: token.email as string },
+          const cleanEmail = (token.email as string).trim().toLowerCase();
+          const dbUser = await prisma.user.findFirst({
+            where: {
+              email: {
+                equals: cleanEmail,
+                mode: "insensitive",
+              },
+            },
             select: { id: true, role: true, avatar: true, guideStatus: true, isBlocked: true, walletAddress: true },
           });
           if (dbUser) {
@@ -98,26 +122,29 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       try {
         if (user.email) {
-          const dbUser = await prisma.user.findUnique({
-            where: { email: user.email },
+          const cleanEmail = user.email.trim().toLowerCase();
+          const dbUser = await prisma.user.findFirst({
+            where: {
+              email: {
+                equals: cleanEmail,
+                mode: "insensitive",
+              },
+            },
           });
           if (dbUser?.isBlocked) {
             return false;
           }
-        }
-        if (account?.provider === "google" && user.email) {
-          const existingUser = await prisma.user.findUnique({
-            where: { email: user.email },
-          });
-          if (!existingUser) {
-            await prisma.user.create({
-              data: {
-                email: user.email,
-                name: user.name || "Google User",
-                avatar: user.image,
-                role: "TOURIST",
-              },
-            });
+          if (account?.provider === "google") {
+            if (!dbUser) {
+              await prisma.user.create({
+                data: {
+                  email: cleanEmail,
+                  name: user.name || "Google User",
+                  avatar: user.image,
+                  role: "TOURIST",
+                },
+              });
+            }
           }
         }
         return true;
@@ -129,20 +156,22 @@ export const authOptions: NextAuthOptions = {
     async redirect({ url, baseUrl }) {
       // 1. Explicitly honor guide verification target
       if (url.includes("/auth/verify-guide")) {
-        return "/auth/verify-guide";
+        return `${baseUrl}/auth/verify-guide`;
       }
-      // 2. Allow relative internal paths
+      // 2. Allows relative callback URLs
       if (url.startsWith("/")) {
-        return url;
+        return `${baseUrl}${url}`;
       }
-      // 3. Extract pathname for any full URL matching current origin or baseUrl
+      // 3. Allows callback URLs on the same origin
       try {
         const parsed = new URL(url);
-        if (parsed.pathname.includes("/auth/verify-guide")) {
-          return "/auth/verify-guide";
-        }
-        if (parsed.origin === baseUrl || parsed.host.includes("localhost") || parsed.host.includes("127.0.0.1")) {
-          return parsed.pathname + parsed.search;
+        if (
+          parsed.origin === baseUrl ||
+          parsed.host.includes("localhost") ||
+          parsed.host.includes("127.0.0.1") ||
+          parsed.host.includes("guidebloc.com")
+        ) {
+          return url;
         }
       } catch {}
       return baseUrl;
@@ -153,6 +182,7 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.NEXTAUTH_SECRET,
 };

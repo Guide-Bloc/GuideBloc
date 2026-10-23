@@ -4,15 +4,21 @@ import { useState } from "react";
 import Link from "next/link";
 import { Mail, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
 import AuthVisualSide from "@/components/auth/AuthVisualSide";
+import TurnstileCaptcha from "@/components/auth/TurnstileCaptcha";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [captchaVerified, setCaptchaVerified] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!captchaVerified) {
+      setError("Please complete the Cloudflare Turnstile verification.");
+      return;
+    }
     setLoading(true);
     setError("");
     setSuccess(false);
@@ -108,10 +114,12 @@ export default function ForgotPasswordPage() {
                   </div>
                 </div>
 
+                <TurnstileCaptcha onVerify={setCaptchaVerified} />
+
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="w-full mt-4 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-500/25 transition-all cursor-pointer disabled:opacity-50"
+                  disabled={loading || !captchaVerified}
+                  className="w-full mt-4 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-500/25 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {loading ? (
                     <>

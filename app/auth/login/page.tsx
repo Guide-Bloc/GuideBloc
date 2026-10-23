@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { signIn, useSession } from "next-auth/react";
+import { useState, Suspense } from "react";
+import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import AuthVisualSide from "@/components/auth/AuthVisualSide";
+import TurnstileCaptcha from "@/components/auth/TurnstileCaptcha";
 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: session, status } = useSession();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,53 +18,33 @@ function LoginContent() {
   const [keepSignedIn, setKeepSignedIn] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // Automatically intercept users who intended to sign up/verify as guide,
-  // or authenticated users who landed on the sign-in page
-  useEffect(() => {
-    try {
-      const cookieIntent = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("guidebloc_role_intent="))
-        ?.split("=")[1];
-      const localIntent = typeof window !== "undefined" ? localStorage.getItem("guidebloc_role_intent") : null;
-
-      if (cookieIntent === "GUIDE" || localIntent === "GUIDE") {
-        document.cookie = "guidebloc_role_intent=; path=/; max-age=0";
-        try {
-          localStorage.removeItem("guidebloc_role_intent");
-        } catch {}
-        window.location.href = "/auth/verify-guide";
-        return;
-      }
-    } catch {}
-
-    if (status === "authenticated" && session?.user?.email) {
-      const role = (session.user as any)?.role;
-      if (role === "ADMIN") {
-        window.location.href = "/admin/dashboard";
-      } else if (role === "GUIDE") {
-        window.location.href = "/dashboard/guide/overview";
-      } else {
-        window.location.href = "/dashboard/tourist/bookings";
-      }
-    }
-  }, [session, status]);
+  const [captchaVerified, setCaptchaVerified] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
 
+    if (!captchaVerified) {
+      setError("Please complete the Cloudflare Turnstile verification.");
+      return;
+    }
+
+    setLoading(true);
+
     try {
+      const cleanEmail = email.trim().toLowerCase();
       const result = await signIn("credentials", {
-        email,
+        email: cleanEmail,
         password,
         redirect: false,
       });
 
       if (result?.error) {
-        setError("Invalid email or password. Please verify your credentials.");
+        setError(
+          result.error === "CredentialsSignin"
+            ? "Invalid email or password. Please verify your credentials."
+            : result.error
+        );
         setLoading(false);
         return;
       }
@@ -81,7 +61,7 @@ function LoginContent() {
       }
 
       // Fast role-based redirect
-      const roleRes = await fetch(`/api/auth/user-role?email=${encodeURIComponent(email)}`);
+      const roleRes = await fetch(`/api/auth/user-role?email=${encodeURIComponent(cleanEmail)}`);
       if (roleRes.ok) {
         const { role } = await roleRes.json();
         if (role === "ADMIN") {
@@ -94,14 +74,15 @@ function LoginContent() {
       }
 
       window.location.href = "/dashboard/tourist/bookings";
-    } catch {
-      setError("An unexpected error occurred. Please try again.");
+    } catch (err: any) {
+      console.error("[Login submit error]", err);
+      setError(err?.message || "An unexpected error occurred. Please try again.");
       setLoading(false);
     }
   };
 
   const handleGoogleSignIn = () => {
-    const callback = searchParams.get("callbackUrl") || "/auth/callback";
+    const callback = searchParams.get("callbackUrl") || "/dashboard/tourist/bookings";
     signIn("google", { callbackUrl: callback });
   };
 
@@ -148,6 +129,7 @@ function LoginContent() {
           {/* Google Authentication Button */}
           <button
             type="button"
+            suppressHydrationWarning
             onClick={handleGoogleSignIn}
             className="w-full py-2.5 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-slate-700 font-medium text-sm flex items-center justify-center gap-2.5 shadow-2xs cursor-pointer"
           >
@@ -199,6 +181,7 @@ function LoginContent() {
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="email"
+                  suppressHydrationWarning
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none bg-transparent rounded-xl"
@@ -224,6 +207,7 @@ function LoginContent() {
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type={showPassword ? "text" : "password"}
+                  suppressHydrationWarning
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-10 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none bg-transparent rounded-xl"
@@ -232,6 +216,7 @@ function LoginContent() {
                 />
                 <button
                   type="button"
+                  suppressHydrationWarning
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
                 >
@@ -244,6 +229,7 @@ function LoginContent() {
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
+                  suppressHydrationWarning
                   checked={keepSignedIn}
                   onChange={(e) => setKeepSignedIn(e.target.checked)}
                   className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
@@ -252,10 +238,14 @@ function LoginContent() {
               </label>
             </div>
 
+            {/* Cloudflare Turnstile Captcha */}
+            <TurnstileCaptcha onVerify={setCaptchaVerified} />
+
             <button
               type="submit"
-              disabled={loading}
-              className="w-full mt-4 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-500/25 transition-all cursor-pointer disabled:opacity-50"
+              suppressHydrationWarning
+              disabled={loading || !captchaVerified}
+              className="w-full mt-4 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-500/25 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
