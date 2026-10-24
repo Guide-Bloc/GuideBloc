@@ -5,11 +5,12 @@ import { authOptions } from "@/lib/auth";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const gig = await prisma.gig.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         guide: {
           select: {
@@ -55,8 +56,9 @@ export async function GET(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -65,7 +67,7 @@ export async function PATCH(
 
     const userId = (session.user as any).id;
     const gig = await prisma.gig.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!gig) {
@@ -78,7 +80,7 @@ export async function PATCH(
 
     const data = await req.json();
     const updated = await prisma.gig.update({
-      where: { id: params.id },
+      where: { id: id },
       data,
     });
 
@@ -91,8 +93,9 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -102,7 +105,7 @@ export async function DELETE(
     const userId = (session.user as any).id;
 
     const gig = await prisma.gig.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!gig) {
@@ -115,7 +118,7 @@ export async function DELETE(
 
     // Soft delete: set isActive = false
     await prisma.gig.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { isActive: false },
     });
 
