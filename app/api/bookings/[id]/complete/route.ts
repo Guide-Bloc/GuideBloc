@@ -10,9 +10,8 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
   const { searchParams } = new URL(req.url);
   const token = searchParams.get("token");
 
@@ -22,7 +21,7 @@ export async function GET(
 
   try {
     const booking = await prisma.booking.findUnique({
-      where: { id: id },
+      where: { id: params.id },
       include: {
         gig: {
           include: {

@@ -6,9 +6,8 @@ import { buildBookingAgreementTypedData, verifyBookingSignature } from "@/lib/cr
 
 export async function POST(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -23,7 +22,7 @@ export async function POST(
     }
 
     const booking = await prisma.booking.findUnique({
-      where: { id: id },
+      where: { id: params.id },
       include: { gig: { select: { title: true } } },
     });
 
@@ -53,7 +52,7 @@ export async function POST(
     }
 
     await prisma.booking.update({
-      where: { id: id },
+      where: { id: params.id },
       data: {
         bookingSignature: signature,
         signedAt: new Date(),

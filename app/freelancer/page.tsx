@@ -22,6 +22,7 @@ import {
   Globe
 } from "lucide-react";
 import { Crosshair2Icon } from "@radix-ui/react-icons";
+import { TourismSectionDecorations } from "@/components/ui/TourismOrnaments";
 
 export default function FreelancerPage() {
   const containerVariants = {
@@ -97,17 +98,26 @@ export default function FreelancerPage() {
           </motion.div>
         </div>
 
-        {/* SVG Curved Wave Divider */}
-        <div className="absolute bottom-[-1px] left-0 right-0 w-full overflow-hidden leading-[0]">
-          <svg className="relative block w-full h-[40px] md:h-[60px]" viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V0C26.9,8.75,57.05,18.33,90,26.9,165.73,46.56,252.1,69.28,321.39,56.44Z" className="fill-dark-50 dark:fill-[#0b0f17]"></path>
+        {/* Seamless Pure White Wave Divider */}
+        <div className="absolute -bottom-px left-0 right-0 w-full overflow-hidden leading-none z-20 pointer-events-none">
+          <svg className="relative block w-full h-[45px] sm:h-[60px] md:h-[75px]" viewBox="0 0 1440 100" preserveAspectRatio="none">
+            <path d="M0,35 C320,75 520,15 760,50 C1000,85 1200,20 1440,40 L1440,100 L0,100 Z" fill="#FFFFFF" />
           </svg>
         </div>
       </section>
 
-      {/* Perks Grid (Modern Vibrant Card Grid) */}
-      <section className="py-24 bg-gradient-to-b from-dark-50 via-white to-dark-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Continuous Blue Gradient Wrapper from White down to Blue matching Landing Page */}
+      <div className="relative bg-gradient-to-b from-white via-blue-50/70 via-35% to-blue-100/90 overflow-hidden">
+        {/* Ambient background glows spanning across the combined sections */}
+        <div className="absolute top-[5%] -left-32 w-96 h-96 bg-primary-100/40 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-[25%] -right-32 w-96 h-96 bg-blue-200/40 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-[55%] left-10 w-96 h-96 bg-sky-100/50 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-[10%] right-10 w-96 h-96 bg-primary-100/30 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Perks Grid (Modern Vibrant Card Grid) */}
+        <section className="py-24 relative overflow-hidden bg-transparent">
+          <TourismSectionDecorations variant="guides" />
+          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-wider mb-4 shadow-xs">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
@@ -184,8 +194,9 @@ export default function FreelancerPage() {
       </section>
 
       {/* Meet Your Guide Step Section (Clean White Background) */}
-      <section className="py-24 bg-white border-y border-dark-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-24 bg-transparent border-t border-blue-200/50 relative overflow-hidden">
+        <TourismSectionDecorations variant="standard" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Steps Left */}
             <div>
@@ -256,8 +267,9 @@ export default function FreelancerPage() {
       </section>
 
       {/* Guide Showcase Section */}
-      <section className="py-24 bg-dark-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-24 bg-transparent border-t border-blue-200/50 relative overflow-hidden">
+        <TourismSectionDecorations variant="explore" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Image Left */}
             <div className="relative order-2 lg:order-1">
@@ -295,6 +307,7 @@ export default function FreelancerPage() {
           </div>
         </div>
       </section>
+      </div>
 
       {/* Security Section (Consistent with How-It-Works) */}
       <section className="py-20 bg-dark-900">

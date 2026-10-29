@@ -41,6 +41,15 @@ import {
   FileTextIcon,
   CameraIcon,
 } from "@radix-ui/react-icons";
+import {
+  FlightTrailOrnament,
+  PassportStampOrnament,
+  CompassRoseOrnament,
+  GlobeCoordinatesOrnament,
+  MountainHorizonOrnament,
+  MapMarkerBadgeOrnament,
+  TravelGearBadgeOrnament,
+} from "@/components/ui/TourismOrnaments";
 import GigCard from "@/components/gigs/GigCard";
 
 const featuredDestinations = [
@@ -196,7 +205,7 @@ export default function HomePage() {
         <Navbar />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-dark-900 via-dark-800 to-primary/20 pt-24 pb-44">
+      <section className="relative overflow-hidden bg-gradient-to-br from-dark-900 via-dark-800 to-primary/20 pt-32 sm:pt-40 md:pt-44 pb-48 sm:pb-52">
         {/* Dynamic Hero Background Carousel with Smooth Crossfade */}
         {heroDestinations.map((dest, idx) => (
           <div
@@ -330,12 +339,46 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Safe Escrow Travel Protocol Section */}
-      <section className="py-24 bg-white relative overflow-hidden">
-        {/* Background decorative elements */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none overflow-hidden">
-          <div className="absolute top-1/4 -left-20 w-80 h-80 bg-primary-50 rounded-full blur-3xl opacity-60" />
-          <div className="absolute bottom-10 -right-20 w-80 h-80 bg-blue-50 rounded-full blur-3xl opacity-60" />
+      {/* Continuous Blue Gradient Wrapper from Trust Section down to CTA Section */}
+      <div className="relative bg-gradient-to-b from-white via-blue-50/70 via-35% to-blue-100/90 overflow-hidden">
+        {/* Ambient background glows spanning across the combined sections */}
+        <div className="absolute top-[5%] -left-32 w-96 h-96 bg-primary-100/40 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-[25%] -right-32 w-96 h-96 bg-blue-200/40 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-[55%] left-10 w-96 h-96 bg-sky-100/50 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-[10%] right-10 w-96 h-96 bg-primary-100/30 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Safe Escrow Travel Protocol Section */}
+        <section className="py-24 relative overflow-hidden">
+        {/* Subtle, tasteful tourism ornaments */}
+        <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
+          {/* Ambient blurred glow accents */}
+          <div className="absolute top-1/4 -left-20 w-80 h-80 bg-primary-100/50 rounded-full blur-3xl opacity-70" />
+          <div className="absolute bottom-10 -right-20 w-80 h-80 bg-blue-200/50 rounded-full blur-3xl opacity-70" />
+
+          {/* Navigational Compass Rose on the top right */}
+          <div className="hidden md:block absolute top-8 right-6 lg:right-14">
+            <CompassRoseOrnament className="w-56 h-56 lg:w-64 lg:h-64" />
+          </div>
+
+          {/* Dotted Airplane Flight Trail on the top left */}
+          <div className="hidden lg:block absolute top-6 left-6 lg:left-12">
+            <FlightTrailOrnament className="w-80 h-40" curveDirection="left-to-right" />
+          </div>
+
+          {/* Modern travel geo-tag pin badge on the left side */}
+          <div className="hidden xl:flex absolute top-40 left-12">
+            <MapMarkerBadgeOrnament label="GLOBAL ESCROW" />
+          </div>
+
+          {/* Passport Stamp on bottom right */}
+          <div className="hidden xl:block absolute bottom-12 right-12">
+            <PassportStampOrnament className="w-40 h-40" rotation="12deg" label="VERIFIED TOUR" />
+          </div>
+
+          {/* Mountain Peak Horizon on bottom left */}
+          <div className="hidden lg:block absolute bottom-6 left-8 lg:left-14">
+            <MountainHorizonOrnament className="w-52 h-28" />
+          </div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -347,12 +390,14 @@ export default function HomePage() {
             <h2 className="text-3xl md:text-5xl font-black text-dark-900 tracking-tight font-display">
               Why Travelers & Guides Trust GuideBloc.
             </h2>
-            <p className="text-dark-500 text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
+            <p className="text-dark-500 text-base md:text-lg leading-relaxed max-w-2xl mx-auto font-normal">
               We leverage Avalanche C-Chain smart contract technology to ensure 100% payout security, zero upfront payment risk, and seamless peer-to-peer travel.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+  {/* Decorative ornament */}
+  <div className="absolute -top-10 -left-10 w-48 h-48 bg-primary-100/20 rounded-full blur-3xl pointer-events-none"></div>
             {/* Feature 1 */}
             <div className="relative p-8 rounded-3xl bg-white border border-dark-100/90 shadow-[0_4px_25px_rgb(0,0,0,0.03)] hover:shadow-[0_20px_45px_rgb(29,78,216,0.08)] hover:-translate-y-1.5 transition-all duration-300 group overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-primary/15 via-primary/5 to-transparent rounded-bl-full pointer-events-none transition-transform group-hover:scale-125 duration-500" />
@@ -410,7 +455,7 @@ export default function HomePage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="py-20 bg-dark-50"
+        className="py-20 bg-transparent"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-12">
@@ -464,8 +509,15 @@ export default function HomePage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="py-20 bg-white"
+        className="py-20 bg-transparent relative overflow-hidden"
       >
+        {/* Tourism Ornaments */}
+        <div className="hidden lg:block absolute top-6 right-8 xl:right-16 pointer-events-none select-none">
+          <FlightTrailOrnament className="w-72 h-36 xl:w-80 xl:h-40" curveDirection="right-to-left" />
+        </div>
+        <div className="hidden xl:block absolute bottom-4 left-10 pointer-events-none select-none">
+          <PassportStampOrnament className="w-36 h-36" rotation="-15deg" label="EXPLORE LOCAL" />
+        </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-dark-900 mb-3">
@@ -539,7 +591,7 @@ export default function HomePage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="py-20 bg-white border-t border-dark-100"
+          className="py-20 bg-transparent border-t border-dark-100/60"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
@@ -592,11 +644,19 @@ export default function HomePage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="py-24 bg-slate-50 border-t border-b border-dark-100/70 relative overflow-hidden"
+        className="py-24 bg-transparent border-t border-b border-blue-200/50 relative overflow-hidden"
       >
         {/* Decorative soft blur background */}
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary-50 rounded-full blur-3xl opacity-60 pointer-events-none" />
         <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-blue-50 rounded-full blur-3xl opacity-60 pointer-events-none" />
+
+        {/* Tourism Ornaments */}
+        <div className="hidden lg:block absolute top-12 left-10 pointer-events-none select-none">
+          <TravelGearBadgeOrnament className="w-28 h-28" />
+        </div>
+        <div className="hidden xl:block absolute bottom-12 right-12 pointer-events-none select-none">
+          <PassportStampOrnament className="w-40 h-40" rotation="10deg" label="COMMUNITY VETTED" />
+        </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
@@ -672,16 +732,24 @@ export default function HomePage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="py-24 bg-white relative overflow-hidden"
+        className="py-24 bg-transparent relative overflow-hidden"
       >
         {/* Soft Ambient Glows */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-gradient-to-r from-blue-100/60 to-primary-100/50 rounded-full blur-[120px] pointer-events-none" />
 
         <div className="max-w-5xl mx-auto px-4 relative z-10">
           <div className="p-8 md:p-14 rounded-[2.5rem] bg-gradient-to-br from-blue-50/90 via-white to-primary-50/60 border border-blue-200/70 text-center shadow-[0_15px_50px_rgba(29,78,216,0.06)] space-y-8 relative overflow-hidden">
-            {/* Subtle corner decorative elements */}
+            {/* Subtle corner decorative elements & Tourism Ornaments */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary-200/20 rounded-full blur-2xl pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-200/20 rounded-full blur-2xl pointer-events-none" />
+            
+            {/* Travel Flight Trail & Compass */}
+            <div className="hidden lg:block absolute -top-4 -right-4 pointer-events-none select-none">
+              <FlightTrailOrnament className="w-64 h-32" curveDirection="left-to-right" />
+            </div>
+            <div className="hidden xl:block absolute -bottom-8 -left-8 pointer-events-none select-none">
+              <CompassRoseOrnament className="w-44 h-44" />
+            </div>
 
             <div className="relative z-10 space-y-4 max-w-3xl mx-auto">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-wider shadow-xs">
@@ -734,6 +802,7 @@ export default function HomePage() {
           </div>
         </div>
       </motion.section>
+      </div>
 
       <Footer />
       <AIChatAssistant initialQuery={aiQuery} onCloseInput={() => setAiQuery("")} />

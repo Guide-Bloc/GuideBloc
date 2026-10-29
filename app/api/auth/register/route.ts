@@ -13,69 +13,38 @@ export async function POST(req: Request) {
       );
     }
 
-    const cleanEmail = email.trim().toLowerCase();
-
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        email: {
-          equals: cleanEmail,
-          mode: "insensitive",
-        },
-      },
-    });
-
-    const isApplyingGuide = role === "GUIDE";
-
+    const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      if (existingUser.password) {
-        return NextResponse.json(
-          { message: "Email is already registered. Please sign in." },
-          { status: 409 }
-        );
-      }
-
-      // Existing Google OAuth user setting a password for credentials login
-      const hashedPassword = await bcrypt.hash(password, 12);
-      const updatedUser = await prisma.user.update({
-        where: { id: existingUser.id },
-        data: {
-          name: name.trim() || existingUser.name,
-          password: hashedPassword,
-          ...(isApplyingGuide ? {
-            role: "GUIDE",
-            guideStatus: "PENDING",
-            certificationText: certificationText || existingUser.certificationText,
-            certificationFile: certificationFile || existingUser.certificationFile,
-          } : {}),
-          ...(country ? { country } : {}),
-        },
-      });
-
       return NextResponse.json(
-        { message: "Password set and account updated successfully", userId: updatedUser.id },
-        { status: 200 }
+        { message: "Email already registered" },
+        { status: 409 }
       );
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    const isApplyingGuide = role === "GUIDE";
+
     const user = await prisma.user.create({
       data: {
-        name: name.trim(),
-        email: cleanEmail,
+        name,
+        email,
         password: hashedPassword,
         role: isApplyingGuide ? "GUIDE" : "TOURIST",
         guideStatus: isApplyingGuide ? "PENDING" : "NONE",
         certificationText: isApplyingGuide ? certificationText : null,
         certificationFile: isApplyingGuide ? certificationFile : null,
-        country: country || null,
+        country,
       },
     });
 
-    // Trigger welcome email asynchronously without blocking the response
-    import("@/lib/email")
-      .then(({ triggerWelcomeEmail }) => triggerWelcomeEmail(cleanEmail, name.trim(), user.role))
-      .catch((err) => console.error("Welcome email error:", err));
+    // Trigger welcome email
+    try {
+      const { triggerWelcomeEmail } = await import("@/lib/email");
+      await triggerWelcomeEmail(email.toLowerCase(), name, user.role);
+    } catch (err) {
+      console.error("Welcome email error:", err);
+    }
 
     return NextResponse.json(
       { message: "User created successfully", userId: user.id },

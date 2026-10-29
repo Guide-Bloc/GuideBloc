@@ -9,6 +9,7 @@ import {
   CheckCircle2, Mail, ExternalLink
 } from "lucide-react";
 import { GlobeIcon, LockClosedIcon } from "@radix-ui/react-icons";
+import { TourismSectionDecorations } from "@/components/ui/TourismOrnaments";
 
 export const metadata = {
   title: "About Us — GuideBloc",
@@ -40,17 +41,26 @@ export default function AboutPage() {
           </p>
         </div>
 
-        {/* SVG Curved Wave Divider */}
-        <div className="absolute bottom-[-1px] left-0 right-0 w-full overflow-hidden leading-[0]">
-          <svg className="relative block w-full h-[40px] md:h-[60px]" viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V0C26.9,8.75,57.05,18.33,90,26.9,165.73,46.56,252.1,69.28,321.39,56.44Z" className="fill-dark-50 dark:fill-[#0b0f17]"></path>
+        {/* Seamless Pure White Wave Divider */}
+        <div className="absolute -bottom-px left-0 right-0 w-full overflow-hidden leading-none z-20 pointer-events-none">
+          <svg className="relative block w-full h-[45px] sm:h-[60px] md:h-[75px]" viewBox="0 0 1440 100" preserveAspectRatio="none">
+            <path d="M0,35 C320,75 520,15 760,50 C1000,85 1200,20 1440,40 L1440,100 L0,100 Z" fill="#FFFFFF" />
           </svg>
         </div>
       </section>
 
-      {/* Mission & Purpose Section */}
-      <section className="py-20 md:py-28">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Continuous Blue Gradient Wrapper from White down to Blue matching Landing Page */}
+      <div className="relative bg-gradient-to-b from-white via-blue-50/70 via-35% to-blue-100/90 overflow-hidden">
+        {/* Ambient background glows spanning across the combined sections */}
+        <div className="absolute top-[5%] -left-32 w-96 h-96 bg-primary-100/40 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-[25%] -right-32 w-96 h-96 bg-blue-200/40 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-[55%] left-10 w-96 h-96 bg-sky-100/50 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-[10%] right-10 w-96 h-96 bg-primary-100/30 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Mission & Purpose Section */}
+        <section className="py-20 md:py-28 relative overflow-hidden bg-transparent">
+          <TourismSectionDecorations variant="about" />
+          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
           <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div>
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-wider mb-4 shadow-xs">
@@ -90,8 +100,9 @@ export default function AboutPage() {
       </section>
 
       {/* Leadership & Engineering Section */}
-      <section className="py-20 md:py-28 bg-white border-y border-dark-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 md:py-28 bg-transparent border-t border-blue-200/50 relative overflow-hidden">
+        <TourismSectionDecorations variant="guides" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold uppercase tracking-wider shadow-xs">
               <Compass className="w-3.5 h-3.5 text-indigo-600" />
@@ -210,6 +221,7 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+      </div>
 
       {/* Autonomous AI Executive Team Section */}
       <section className="py-20 md:py-28 relative overflow-hidden bg-dark-950 text-white">
@@ -347,9 +359,13 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Core Values Section */}
-      <section className="py-20 md:py-28 bg-white border-t border-dark-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Core Values Section with Continuous Blue Gradient */}
+      <section className="py-20 md:py-28 bg-gradient-to-b from-white via-blue-50/70 via-35% to-blue-100/90 border-t border-dark-100/80 relative overflow-hidden">
+        {/* Ambient background glows */}
+        <div className="absolute top-[10%] -left-32 w-96 h-96 bg-primary-100/40 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-[10%] -right-32 w-96 h-96 bg-blue-200/40 rounded-full blur-3xl pointer-events-none" />
+        <TourismSectionDecorations variant="standard" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-secondary/10 border border-secondary/20 text-secondary text-xs font-bold uppercase tracking-wider mb-4 shadow-xs">
               <Scale className="w-3.5 h-3.5 text-secondary" />
