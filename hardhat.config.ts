@@ -4,6 +4,9 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
+const deployerKey = process.env.DEPLOYER_PRIVATE_KEY || process.env.RELAYER_PRIVATE_KEY;
+const accounts = deployerKey ? [deployerKey] : [];
+
 const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.24",
@@ -36,16 +39,19 @@ const config: HardhatUserConfig = {
     avalanche_fuji: {
       url: "https://api.avax-test.network/ext/bc/C/rpc",
       chainId: 43113,
-      accounts: process.env.DEPLOYER_PRIVATE_KEY !== undefined ? [process.env.DEPLOYER_PRIVATE_KEY] : [],
+      accounts: accounts,
     },
     avalanche: {
       url: "https://api.avax.network/ext/bc/C/rpc",
       chainId: 43114,
-      accounts: process.env.DEPLOYER_PRIVATE_KEY !== undefined ? [process.env.DEPLOYER_PRIVATE_KEY] : [],
+      accounts: accounts,
     },
   },
   etherscan: {
     apiKey: process.env.SNOWTRACE_API_KEY || ""
+  },
+  sourcify: {
+    enabled: true
   }
 };
 

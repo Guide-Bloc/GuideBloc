@@ -69,3 +69,16 @@ Spec: `docs/Smart Contract Update.md`. Work completed according to staged execut
 6. `docs/STATE_MACHINE.md`
 7. `docs/THREAT_MODEL.md`
 8. `docs/PROGRESS.md`
+
+---
+
+## Live Deployments
+
+### Avalanche Fuji Testnet (Chain ID 43113)
+- **Contract Address:** `0x2D4eC9380218C252F9468078b35F90B559331d19`
+- **Explorer:** [Snowtrace Fuji](https://testnet.snowtrace.io/address/0x2D4eC9380218C252F9468078b35F90B559331d19)
+- **Deployer / Roles Admin:** `0xD079b77f43caf354b494299e7c0316e02cD79384`
+- **Platform Treasury:** `0x079D9c349741C27565ee04e31E4174F640F512aE`
+- **Allowlisted Stablecoin:**
+  - Circle USDC: `0x5425890298aed601595a70AB815c96711a31Bc65` (Permit: true, Min: 5 USDC, Cap: 1,000 USDC, TVL Cap: 50,000 USDC)
+- **Parameters:** Commission 10% (1000 bps), Dispute Bond 5% (500 bps, min floor 10 USDC), Dispute Window 72h, Arbitration Window 96h.
