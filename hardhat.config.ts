@@ -6,14 +6,31 @@ dotenv.config();
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.20",
+    version: "0.8.24",
     settings: {
       optimizer: {
         enabled: true,
         runs: 200,
       },
-      evmVersion: "paris",
+      // Avalanche C-Chain (mainnet and Fuji) supports the Cancun fork.
+      evmVersion: "cancun",
+      outputSelection: {
+        "*": {
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata",
+            "storageLayout",
+          ],
+          "": ["ast"],
+        },
+      },
     },
+  },
+  paths: {
+    sources: "./src",
   },
   networks: {
     avalanche_fuji: {
