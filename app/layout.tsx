@@ -40,8 +40,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${plusJakartaSans.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className="font-body antialiased" suppressHydrationWarning>
+    <html lang="en" className={`${plusJakartaSans.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
+      <body className="font-body antialiased">
         <AuthProvider>
           {children}
           <Toaster richColors position="top-right" />

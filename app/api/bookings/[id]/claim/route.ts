@@ -7,9 +7,8 @@ export const dynamic = "force-dynamic";
 
 export async function POST(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -22,7 +21,7 @@ export async function POST(
     }
 
     const booking = await prisma.booking.findUnique({
-      where: { id: id },
+      where: { id: params.id },
       include: {
         gig: {
           include: {

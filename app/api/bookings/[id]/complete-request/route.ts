@@ -23,9 +23,8 @@ function generateCompletionToken(bookingId: string): string {
  */
 export async function POST(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -35,7 +34,7 @@ export async function POST(
     const user = session.user as any;
 
     const booking = await prisma.booking.findUnique({
-      where: { id: id },
+      where: { id: params.id },
       include: {
         gig: { select: { guideId: true, title: true } },
       },
@@ -59,12 +58,12 @@ export async function POST(
     }
 
     // Generate one-time token
-    const token = generateCompletionToken(id);
+    const token = generateCompletionToken(params.id);
     const expiresAt = new Date(Date.now() + TOKEN_EXPIRY_MINUTES * 60 * 1000);
     const now = new Date();
 
     await prisma.booking.update({
-      where: { id: id },
+      where: { id: params.id },
       data: {
         completionToken: token,
         completionTokenExpiresAt: expiresAt,
@@ -73,7 +72,7 @@ export async function POST(
     });
 
     const appUrl = process.env.NEXTAUTH_URL || "https://guidebloc.com";
-    const qrUrl = appUrl + "/api/bookings/" + id + "/complete?token=" + token;
+    const qrUrl = appUrl + "/api/bookings/" + params.id + "/complete?token=" + token;
 
     return NextResponse.json({
       success: true,
