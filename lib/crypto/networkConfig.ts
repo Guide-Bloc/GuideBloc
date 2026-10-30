@@ -8,7 +8,7 @@
  */
 
 // >>> TOGGLE HERE TO SWITCH PLATFORM NETWORK: "fuji" | "mainnet" <<<
-export const ACTIVE_NETWORK: "fuji" | "mainnet" = "mainnet";
+export const ACTIVE_NETWORK: "fuji" | "mainnet" = "fuji";
 
 export const NETWORKS = {
   // ==========================================================================

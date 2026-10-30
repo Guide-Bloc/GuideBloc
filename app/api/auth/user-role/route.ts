@@ -12,8 +12,15 @@ export async function GET(req: Request) {
       return NextResponse.json({ message: "Email is required" }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email },
+    const cleanEmail = email.trim().toLowerCase();
+
+    const user = await prisma.user.findFirst({
+      where: {
+        email: {
+          equals: cleanEmail,
+          mode: "insensitive",
+        },
+      },
       select: { role: true },
     });
 

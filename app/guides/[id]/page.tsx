@@ -11,12 +11,13 @@ import { getCountryFlag, formatCurrency } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-export default async function GuideProfilePage({ params }: { params: { id: string } }) {
+export default async function GuideProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const guide = await prisma.user.findFirst({
     where: {
       OR: [
-        { id: params.id },
-        { email: params.id },
+        { id: id },
+        { email: id },
       ],
       role: { in: ["GUIDE", "ADMIN"] },
     },

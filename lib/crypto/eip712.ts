@@ -10,7 +10,7 @@ export function getEIP712Domain() {
   return {
     name: "GuideBloc",
     version: "1",
-    chainId: 43114, // Avalanche C-Chain mainnet
+    chainId: cfg.chainIdDecimal, // Dynamic active network
     verifyingContract: cfg.escrowContractAddress as `0x${string}`,
   };
 }

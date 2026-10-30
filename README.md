@@ -1,12 +1,18 @@
+> [!WARNING]
+> ### 🚧 SYSTEM MAINTENANCE NOTICE
+> **The GuideBloc. platform is currently undergoing scheduled maintenance and active protocol migration.**
+> Production mainnet settlements are temporarily paused while contracts and services run on **Avalanche Fuji Testnet**. Local development environments are unaffected.
+
 <div align="center">
 
   <img src="https://www.guidebloc.com/assets/assemble.png" alt="GuideBloc. Logo" width="220" />
 
   # GuideBloc.
-  ### Decentralized P2P travel gig marketplace built on Avalanche C-Chain for local guide escrow bookings
+  ### Decentralized P2P travel gig marketplace built on Avalanche for local guide escrow bookings
 
-  [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge&logo=nextdotjs)](https://nextjs.org)
-  [![Network](https://img.shields.io/badge/Chain-Avalanche%20C--Chain-E84142?style=for-the-badge&logo=avalanche)](https://avax.network)
+  [![Status](https://img.shields.io/badge/Status-Under%20Maintenance-FFA500?style=for-the-badge&logo=statuspage)](https://guidebloc.com)
+  [![Network](https://img.shields.io/badge/Active%20Chain-Avalanche%20Fuji%20Testnet-E84142?style=for-the-badge&logo=avalanche)](https://testnet.snowtrace.io)
+  [![Next.js](https://img.shields.io/badge/Next.js-v15.5.28-black?style=for-the-badge&logo=nextdotjs)](https://nextjs.org)
   [![Database](https://img.shields.io/badge/Database-Neon%20Cloud%20PostgreSQL-00E599?style=for-the-badge&logo=postgresql)](https://neon.tech)
   [![License](https://img.shields.io/badge/License-Proprietary%20All%20Rights%20Reserved-blue?style=for-the-badge)](#-license)
 
@@ -22,14 +28,14 @@
 
 ## 📖 Overview
 
-**GuideBloc.** is a state-of-the-art Web3 decentralized travel marketplace (DApp) connecting global travelers (*Tourists*) with verified local insiders (*Tour Guides*). Powered by pure Web3 smart escrow contracts on **Avalanche C-Chain**, GuideBloc. eliminates middleman lockups, ensures zero-trust payment safety, guarantees 100% net earnings for tour guides, and delivers an immersive, gamified travel experience worldwide.
+**GuideBloc.** is a state-of-the-art Web3 decentralized travel marketplace (DApp) connecting global travelers (*Tourists*) with verified local insiders (*Tour Guides*). Powered by pure Web3 smart escrow contracts on **Avalanche**, GuideBloc. eliminates middleman lockups, ensures zero-trust payment safety, guarantees 100% net earnings for tour guides, and delivers an immersive, gamified travel experience worldwide.
 
 ---
 
 ## ⚡ Core Platform Features
 
 ### 🛡️ 1. Pure Web3 Escrow V2 (Serverless & Bot-Proof)
-- **Zero-Trust Settlement**: Traveler payments in **Native USDC/USDT** are securely locked in immutable smart escrow contracts on **Avalanche C-Chain**.
+- **Zero-Trust Settlement**: Traveler payments in **Native USDC/USDT** are securely locked in immutable smart escrow contracts on **Avalanche**.
 - **100% Guide Net Guarantee**: A transparent buyer-pays model ensures guides receive exactly 100% of their designated take-home payout upon completion, while tourist checkout seamlessly covers the 10% protocol fee.
 - **On-Chain Atomic Distribution**: Upon tour verification, escrow funds are transferred simultaneously and atomically on-chain (90% to the guide's registered wallet + 10% to the protocol treasury).
 - **Zero Server Custody**: Completely decentralized settlement without server private key custody.
@@ -60,23 +66,22 @@
 
 | Network | Network Type | Contract Address | Explorer Link | Chain ID |
 | :--- | :--- | :--- | :--- | :--- |
-| 🔺 **Avalanche C-Chain** | **Mainnet (Active)** | `0x2D4eC9380218C252F9468078b35F90B559331d19` | [SnowTrace Mainnet](https://snowtrace.io/address/0x2D4eC9380218C252F9468078b35F90B559331d19) | `43114` |
-| 🔺 **Avalanche Fuji** | **Testnet** | `0xCd934aEBb3f0774a02121fc8AD0741D5073C23F2` | [SnowTrace Fuji](https://testnet.snowtrace.io/address/0xCd934aEBb3f0774a02121fc8AD0741D5073C23F2) | `43113` |
+| 🔺 **Avalanche Fuji** | **Testnet (Active)** | `0x94AC43858B9f4595f12bB56A5BB8dB3f3EB0521D` | [SnowTrace Fuji](https://testnet.snowtrace.io/address/0x94AC43858B9f4595f12bB56A5BB8dB3f3EB0521D) | `43113` |
+| 🔺 **Avalanche C-Chain** | **Mainnet (Maintenance)** | `0x2D4eC9380218C252F9468078b35F90B559331d19` | [SnowTrace Mainnet](https://snowtrace.io/address/0x2D4eC9380218C252F9468078b35F90B559331d19) | `43114` |
 
-### 🪙 Official Mainnet Token Addresses (Avalanche C-Chain)
-- **Circle Native USDC**: [`0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E`](https://snowtrace.io/token/0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E) (Decimals: 6)
-- **Tether USD (USDT)**: [`0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7`](https://snowtrace.io/token/0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7) (Decimals: 6)
+### 🪙 Active Testnet Token & Treasury Addresses (Avalanche Fuji)
+- **Fuji Mock USDC/USDT**: [`0x2874C7e0C9B27029455f2a46D2332acE7C749DA9`](https://testnet.snowtrace.io/address/0x2874C7e0C9B27029455f2a46D2332acE7C749DA9)
 - **Platform Treasury Address**: `0x079D9c349741C27565ee04e31E4174F640F512aE`
 
 ---
 
 ## 🛠️ Technology Stack
 
-- **Frontend & App Framework**: Next.js 14 (App Router), React 18, TypeScript
+- **Frontend & App Framework**: Next.js 15 (v15.5.28 App Router), React 18, TypeScript
 - **Styling & Animation**: Tailwind CSS, Framer Motion, Lucide React Icons
 - **Database & ORM**: PostgreSQL (Neon Cloud DB), Prisma ORM
 - **Smart Contracts & Web3**: Solidity 0.8.20, OpenZeppelin, Hardhat, Ethers.js v6
-- **Authentication**: NextAuth.js (Google OAuth & Credentials Provider)
+- **Authentication**: NextAuth.js with Cloudflare Turnstile & credentials sanitization
 
 ---
 
@@ -84,8 +89,8 @@
 
 ### 1. Clone & Install Dependencies
 ```bash
-git clone https://github.com/zhao-leihan/guidebloc.git
-cd guidebloc
+git clone https://github.com/Guide-Bloc/GuideBloc.git
+cd GuideBloc
 npm install
 ```
 
@@ -95,7 +100,7 @@ Copy `.env.example` to `.env` and fill in your database and Web3 configurations:
 DATABASE_URL="postgresql://neondb_owner:password@ep-sweet-bar.neon.tech/neondb?sslmode=require"
 NEXTAUTH_SECRET="your-nextauth-secret"
 NEXTAUTH_URL="http://localhost:3000"
-NEXT_PUBLIC_ESCROW_ADDRESS="0x2D4eC9380218C252F9468078b35F90B559331d19"
+NEXT_PUBLIC_ESCROW_ADDRESS="0x94AC43858B9f4595f12bB56A5BB8dB3f3EB0521D"
 ```
 
 ### 3. Database Migration & Seeding

@@ -5,8 +5,9 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -14,7 +15,7 @@ export async function GET(
     }
 
     const userId = (session.user as any).id;
-    const conversationId = params.id;
+    const conversationId = id;
 
     const conversation = await prisma.conversation.findFirst({
       where: {
@@ -66,8 +67,9 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -75,7 +77,7 @@ export async function POST(
     }
 
     const userId = (session.user as any).id;
-    const conversationId = params.id;
+    const conversationId = id;
 
     const conversation = await prisma.conversation.findFirst({
       where: {

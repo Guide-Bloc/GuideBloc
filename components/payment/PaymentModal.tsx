@@ -127,7 +127,8 @@ export default function PaymentModal({
   if (!isOpen) return null;
 
   const escrowAddress = getEscrowAddress(selectedNetwork);
-  const chainIdNum = selectedNetwork === "avalanche" ? 43114 : 8453;
+  const cfg = getNetworkConfig();
+  const chainIdNum = selectedNetwork === "avalanche" ? cfg.chainIdDecimal : 8453;
   const eip681Uri = `ethereum:${escrowAddress}@${chainIdNum}/transfer?address=${escrowAddress}&uint256=${Math.round(amount * 1e6)}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(eip681Uri)}`;
 

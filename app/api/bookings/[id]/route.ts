@@ -21,8 +21,9 @@ function getRpcUrl(network?: string | null): string {
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -35,7 +36,7 @@ export async function PATCH(
     }
 
     const booking = await prisma.booking.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         tourist: true,
         gig: {
@@ -153,7 +154,7 @@ export async function PATCH(
 
     // ─── Update booking status and optional payment fields ───────────────────
     const updatedBooking = await prisma.booking.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         status,
         ...(txHash && { txHash }),
@@ -395,8 +396,9 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -404,7 +406,7 @@ export async function DELETE(
     }
 
     const booking = await prisma.booking.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!booking) {
@@ -418,7 +420,7 @@ export async function DELETE(
       );
     }
 
-    await prisma.booking.delete({ where: { id: params.id } });
+    await prisma.booking.delete({ where: { id: id } });
 
     return NextResponse.json({ message: "Booking deleted successfully" });
   } catch (error) {
