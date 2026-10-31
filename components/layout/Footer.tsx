@@ -1,99 +1,140 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { HeartFilledIcon } from "@radix-ui/react-icons";
-import { Mail, User } from "lucide-react";
+import { Mail, User, Droplet, Sparkles, Coins } from "lucide-react";
+import TestnetFaucetModal from "@/components/faucet/TestnetFaucetModal";
 
 export default function Footer() {
+  const [isFaucetOpen, setIsFaucetOpen] = useState(false);
+
   return (
-    <footer className="bg-dark-900 text-dark-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-          {/* Brand */}
-          <div className="space-y-4">
-            <Link href="/" className="flex items-center">
-              <Image 
-                src="/assets/assemble.webp" 
-                alt="GuideBloc. Logo" 
-                width={140}
-                height={40}
-                loading="lazy"
-                className="h-9 md:h-11 w-auto object-contain" 
-              />
-            </Link>
-            <p className="text-sm text-dark-400 leading-relaxed">
-              Explore the world with local guides. Pay securely with crypto.
+    <>
+      <footer className="bg-dark-900 text-dark-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+            {/* Brand */}
+            <div className="space-y-4">
+              <Link href="/" className="flex items-center">
+                <Image 
+                  src="/assets/assemble.webp" 
+                  alt="GuideBloc. Logo" 
+                  width={140}
+                  height={40}
+                  loading="lazy"
+                  className="h-9 md:h-11 w-auto object-contain" 
+                />
+              </Link>
+              <p className="text-sm text-dark-400 leading-relaxed">
+                Explore the world with local guides. Pay securely with crypto.
+              </p>
+              
+              {/* Accepted Tokens & Avalanche Badges */}
+              <div className="flex gap-2 items-center">
+                <div className="bg-dark-800 border border-dark-700 hover:border-primary/50 p-2 rounded-xl flex items-center justify-center transition-all shadow-sm" title="USDT Accepted">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/0/01/USDT_Logo.png" alt="USDT" loading="lazy" decoding="async" className="h-5 w-5 object-contain" />
+                </div>
+                <div className="bg-dark-800 border border-dark-700 hover:border-primary/50 p-2 rounded-xl flex items-center justify-center transition-all shadow-sm" title="USDC Accepted">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Circle_USDC_Logo.svg/1280px-Circle_USDC_Logo.svg.png" alt="USDC" loading="lazy" decoding="async" className="h-5 w-5 object-contain" />
+                </div>
+                <div className="bg-dark-800 border border-dark-700 hover:border-primary/50 p-2 rounded-xl flex items-center justify-center transition-all shadow-sm" title="Avalanche C-Chain Supported">
+                  <img src="https://cryptologos.cc/logos/avalanche-avax-logo.png" alt="Avalanche" loading="lazy" decoding="async" className="h-5 w-5 object-contain" />
+                </div>
+              </div>
+
+              {/* Faucet Action Button */}
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => setIsFaucetOpen(true)}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-primary/15 via-cyan-500/15 to-emerald-500/15 hover:from-primary/25 hover:via-cyan-500/25 hover:to-emerald-500/25 border border-primary/30 hover:border-primary text-xs font-semibold text-primary hover:text-white transition-all shadow-sm hover:shadow-primary/20 group"
+                  title="Claim free testnet USDC and USDT on Avalanche Fuji"
+                >
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>Claim Testnet USDC / USDT</span>
+                  <Sparkles className="w-3.5 h-3.5 text-primary group-hover:rotate-12 transition-transform" />
+                </button>
+              </div>
+
+              <div className="pt-2">
+                <a 
+                  href="https://www.instagram.com/guidebloc" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="inline-flex items-center gap-2 text-sm text-dark-400 hover:text-primary transition-colors"
+                >
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                  </svg>
+                  <span>@guidebloc</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Explore */}
+            <div>
+              <h4 className="font-display font-semibold text-white mb-4">Explore</h4>
+              <ul className="space-y-2.5">
+                <li><Link href="/explore" className="text-sm hover:text-primary transition-colors">All Tours</Link></li>
+                <li><Link href="/explore?category=adventure" className="text-sm hover:text-primary transition-colors">Adventure</Link></li>
+                <li><Link href="/explore?category=cultural" className="text-sm hover:text-primary transition-colors">Cultural</Link></li>
+                <li><Link href="/explore?category=food" className="text-sm hover:text-primary transition-colors">Food & Drink</Link></li>
+                <li><Link href="/explore?category=nature" className="text-sm hover:text-primary transition-colors">Nature</Link></li>
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div>
+              <h4 className="font-display font-semibold text-white mb-4">Company</h4>
+              <ul className="space-y-2.5">
+                <li><Link href="/about" className="text-sm hover:text-primary transition-colors">About Us</Link></li>
+                <li><Link href="/how-it-works" className="text-sm hover:text-primary transition-colors">How It Works</Link></li>
+                <li><Link href="/team" className="text-sm hover:text-primary transition-colors">Our Team</Link></li>
+              </ul>
+            </div>
+
+            {/* Support & Emergency */}
+            <div>
+              <h4 className="font-display font-semibold text-white mb-4">Support & Emergency</h4>
+              <ul className="space-y-2.5">
+                <li><Link href="/help-center" className="text-sm hover:text-primary transition-colors">Help Center</Link></li>
+                <li><a href="mailto:admin@guidebloc.com" className="text-sm hover:text-primary transition-colors text-cyan-400 font-medium flex items-center gap-1.5"><Mail className="w-3.5 h-3.5 text-cyan-400 inline-block" /> admin@guidebloc.com</a></li>
+                <li><a href="mailto:rayhan@guidebloc.com" className="text-sm hover:text-primary transition-colors text-cyan-400 font-medium flex items-center gap-1.5"><User className="w-3.5 h-3.5 text-cyan-400 inline-block" /> rayhan@guidebloc.com</a></li>
+                <li><Link href="/safety" className="text-sm hover:text-primary transition-colors">Safety & Escrow</Link></li>
+                <li><Link href="/terms-of-service" className="text-sm hover:text-primary transition-colors">Terms of Service</Link></li>
+                <li><Link href="/privacy-policy" className="text-sm hover:text-primary transition-colors">Privacy Policy</Link></li>
+                <li>
+                  <button 
+                    type="button"
+                    onClick={() => setIsFaucetOpen(true)} 
+                    className="text-sm hover:text-primary transition-colors text-emerald-400 font-medium flex items-center gap-1.5"
+                  >
+                    <Droplet className="w-3.5 h-3.5 inline-block text-emerald-400" />
+                    Testnet Faucet (USDC/USDT)
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-12 pt-8 border-t border-dark-700 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-dark-500">
+              &copy; {new Date().getFullYear()} GuideBloc. All rights reserved.
             </p>
-            <div className="flex gap-2 items-center">
-              <div className="bg-dark-800 border border-dark-700 hover:border-primary/50 p-2 rounded-xl flex items-center justify-center transition-all shadow-sm" title="USDT Accepted">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/0/01/USDT_Logo.png" alt="USDT" loading="lazy" decoding="async" className="h-5 w-5 object-contain" />
-              </div>
-              <div className="bg-dark-800 border border-dark-700 hover:border-primary/50 p-2 rounded-xl flex items-center justify-center transition-all shadow-sm" title="USDC Accepted">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Circle_USDC_Logo.svg/1280px-Circle_USDC_Logo.svg.png" alt="USDC" loading="lazy" decoding="async" className="h-5 w-5 object-contain" />
-              </div>
-              <div className="bg-dark-800 border border-dark-700 hover:border-primary/50 p-2 rounded-xl flex items-center justify-center transition-all shadow-sm" title="Avalanche C-Chain Supported">
-                <img src="https://cryptologos.cc/logos/avalanche-avax-logo.png" alt="Avalanche" loading="lazy" decoding="async" className="h-5 w-5 object-contain" />
-              </div>
-            </div>
-            <div className="pt-2">
-              <a 
-                href="https://www.instagram.com/guidebloc" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="inline-flex items-center gap-2 text-sm text-dark-400 hover:text-primary transition-colors"
-              >
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
-                </svg>
-                <span>@guidebloc</span>
-              </a>
-            </div>
-          </div>
-
-          {/* Explore */}
-          <div>
-            <h4 className="font-display font-semibold text-white mb-4">Explore</h4>
-            <ul className="space-y-2.5">
-              <li><Link href="/explore" className="text-sm hover:text-primary transition-colors">All Tours</Link></li>
-              <li><Link href="/explore?category=adventure" className="text-sm hover:text-primary transition-colors">Adventure</Link></li>
-              <li><Link href="/explore?category=cultural" className="text-sm hover:text-primary transition-colors">Cultural</Link></li>
-              <li><Link href="/explore?category=food" className="text-sm hover:text-primary transition-colors">Food & Drink</Link></li>
-              <li><Link href="/explore?category=nature" className="text-sm hover:text-primary transition-colors">Nature</Link></li>
-            </ul>
-          </div>
-
-          {/* Company */}
-          <div>
-            <h4 className="font-display font-semibold text-white mb-4">Company</h4>
-            <ul className="space-y-2.5">
-              <li><Link href="/about" className="text-sm hover:text-primary transition-colors">About Us</Link></li>
-              <li><Link href="/how-it-works" className="text-sm hover:text-primary transition-colors">How It Works</Link></li>
-              <li><Link href="/team" className="text-sm hover:text-primary transition-colors">Our Team</Link></li>
-            </ul>
-          </div>
-
-          {/* Support & Emergency */}
-          <div>
-            <h4 className="font-display font-semibold text-white mb-4">Support & Emergency</h4>
-            <ul className="space-y-2.5">
-              <li><Link href="/help-center" className="text-sm hover:text-primary transition-colors">Help Center</Link></li>
-              <li><a href="mailto:admin@guidebloc.com" className="text-sm hover:text-primary transition-colors text-cyan-400 font-medium flex items-center gap-1.5"><Mail className="w-3.5 h-3.5 text-cyan-400 inline-block" /> admin@guidebloc.com</a></li>
-              <li><a href="mailto:rayhan@guidebloc.com" className="text-sm hover:text-primary transition-colors text-cyan-400 font-medium flex items-center gap-1.5"><User className="w-3.5 h-3.5 text-cyan-400 inline-block" /> rayhan@guidebloc.com</a></li>
-              <li><Link href="/safety" className="text-sm hover:text-primary transition-colors">Safety & Escrow</Link></li>
-              <li><Link href="/terms-of-service" className="text-sm hover:text-primary transition-colors">Terms of Service</Link></li>
-              <li><Link href="/privacy-policy" className="text-sm hover:text-primary transition-colors">Privacy Policy</Link></li>
-            </ul>
+            <p className="text-sm text-dark-500">
+              Built with <HeartFilledIcon className="w-3.5 h-3.5 text-danger inline-block" /> - Where Adventure Meets Web3
+            </p>
           </div>
         </div>
+      </footer>
 
-        <div className="mt-12 pt-8 border-t border-dark-700 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-dark-500">
-            &copy; {new Date().getFullYear()} GuideBloc. All rights reserved.
-          </p>
-          <p className="text-sm text-dark-500">
-            Built with <HeartFilledIcon className="w-3.5 h-3.5 text-danger inline-block" /> - Where Adventure Meets Web3
-          </p>
-        </div>
-      </div>
-    </footer>
+      {/* Testnet Faucet Modal */}
+      <TestnetFaucetModal 
+        isOpen={isFaucetOpen} 
+        onClose={() => setIsFaucetOpen(false)} 
+      />
+    </>
   );
 }

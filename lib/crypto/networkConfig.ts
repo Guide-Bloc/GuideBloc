@@ -26,9 +26,10 @@ export const NETWORKS = {
     nativeCurrency: { name: "AVAX", symbol: "AVAX", decimals: 18 },
     
     // Fuji Smart Contract Addresses
-    escrowContractAddress: "0x94AC43858B9f4595f12bB56A5BB8dB3f3EB0521D",
+    escrowContractAddress: "0x2D4eC9380218C252F9468078b35F90B559331d19",
     usdcTokenAddress: "0x2874C7e0C9B27029455f2a46D2332acE7C749DA9",
-    usdtTokenAddress: "0x2874C7e0C9B27029455f2a46D2332acE7C749DA9",
+    usdtTokenAddress: "0xad76726fb9de507811c2aa6721a6d23cbffc9f67",
+    circleUsdcAddress: "0x5425890298aed601595a70AB815c96711a31Bc65",
     treasuryAddress: "0x079D9c349741C27565ee04e31E4174F640F512aE",
   },
 
@@ -101,6 +102,34 @@ export async function importUsdcToMetaMask(): Promise<boolean> {
     return !!wasAdded;
   } catch (error: any) {
     console.error("Failed to import token to MetaMask:", error);
+    throw error;
+  }
+}
+
+/**
+ * 1-Click helper to import our active USDT token into MetaMask
+ */
+export async function importUsdtToMetaMask(): Promise<boolean> {
+  if (typeof window === "undefined" || !(window as any).ethereum) {
+    throw new Error("MetaMask is not installed.");
+  }
+  const cfg = getNetworkConfig();
+  try {
+    const wasAdded = await (window as any).ethereum.request({
+      method: "wallet_watchAsset",
+      params: {
+        type: "ERC20",
+        options: {
+          address: cfg.usdtTokenAddress,
+          symbol: "USDT",
+          decimals: 6,
+          image: "https://cryptologos.cc/logos/tether-usdt-logo.png",
+        },
+      },
+    });
+    return !!wasAdded;
+  } catch (error: any) {
+    console.error("Failed to import USDT to MetaMask:", error);
     throw error;
   }
 }
