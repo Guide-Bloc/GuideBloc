@@ -48,3 +48,10 @@ next-env.d.ts
 
 coverage.json
 REMIND.md
+
+# Graphify local output
+graphify-out/
+.graphify/
+
+.agents/
+
