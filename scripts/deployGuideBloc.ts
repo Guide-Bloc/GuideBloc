@@ -34,10 +34,26 @@ const NETWORKS: Record<string, DeploymentNetworkConfig> = {
     treasury: process.env.TREASURY_ADDRESS || "0x079D9c349741C27565ee04e31E4174F640F512aE",
     tokens: [
       {
-        name: "USDC (Fuji)",
+        name: "MockUSDC (Fuji)",
+        address: "0x2874C7e0C9B27029455f2a46D2332acE7C749DA9",
+        permitSupported: false,
+        minAmount: 100_000n, // 0.1 USDC
+        perBookingCap: 1_000_000_000n, // 1,000 USDC
+        tvlCap: 50_000_000_000n, // 50,000 USDC
+      },
+      {
+        name: "MockUSDT (Fuji)",
+        address: "0xad76726fb9de507811c2aa6721a6d23cbffc9f67",
+        permitSupported: false,
+        minAmount: 100_000n, // 0.1 USDT
+        perBookingCap: 1_000_000_000n, // 1,000 USDT
+        tvlCap: 50_000_000_000n, // 50,000 USDT
+      },
+      {
+        name: "Circle USDC (Fuji)",
         address: "0x5425890298aed601595a70AB815c96711a31Bc65",
         permitSupported: true,
-        minAmount: 5_000_000n, // 5 USDC
+        minAmount: 100_000n, // 0.1 USDC
         perBookingCap: 1_000_000_000n, // 1,000 USDC
         tvlCap: 50_000_000_000n, // 50,000 USDC
       },

@@ -4,6 +4,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { recalculateGigRankingScore } from "@/lib/ranking";
 
+let cachedCountries: { data: string[]; timestamp: number } | null = null;
+const COUNTRIES_CACHE_TTL = 60_000;
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -64,21 +67,28 @@ export async function GET(req: Request) {
       if (maxPrice) where.priceUSD.lte = parseFloat(maxPrice);
     }
 
-    // Fetch distinct active countries from DB
-    const dbCountries = await prisma.gig.findMany({
-      where: { isActive: true },
-      select: { country: true },
-      distinct: ["country"],
-    });
-    const availableCountries = Array.from(new Set(dbCountries.map(g => g.country).filter(Boolean)));
+    // Fetch active countries (cached) and gigs in parallel
+    const countriesPromise = (cachedCountries && Date.now() - cachedCountries.timestamp < COUNTRIES_CACHE_TTL)
+      ? Promise.resolve(cachedCountries.data)
+      : prisma.gig.findMany({
+          where: { isActive: true },
+          select: { country: true },
+          distinct: ["country"],
+        }).then((dbCountries) => {
+          const countries = Array.from(new Set(dbCountries.map((g) => g.country).filter(Boolean)));
+          cachedCountries = { data: countries, timestamp: Date.now() };
+          return countries;
+        });
 
-    // Fetch all matching gigs
-    const allGigs = await prisma.gig.findMany({
+    const gigsPromise = prisma.gig.findMany({
       where,
+      take: 60,
       include: {
         guide: { select: { id: true, name: true, avatar: true, country: true } },
       },
     });
+
+    const [availableCountries, allGigs] = await Promise.all([countriesPromise, gigsPromise]);
 
     // 1. Sort based on criteria
     const sortFunctions: Record<string, (a: any, b: any) => number> = {

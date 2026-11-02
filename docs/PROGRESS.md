@@ -75,10 +75,12 @@ Spec: `docs/Smart Contract Update.md`. Work completed according to staged execut
 ## Live Deployments
 
 ### Avalanche Fuji Testnet (Chain ID 43113)
-- **Contract Address:** `0x2D4eC9380218C252F9468078b35F90B559331d19`
-- **Explorer:** [Snowtrace Fuji](https://testnet.snowtrace.io/address/0x2D4eC9380218C252F9468078b35F90B559331d19)
+- **Contract Address:** `0xD39883b0C1b6AdFa31d92431141D8d7DD9e8e4AB`
+- **Explorer:** [Snowtrace Fuji](https://testnet.snowtrace.io/address/0xD39883b0C1b6AdFa31d92431141D8d7DD9e8e4AB)
 - **Deployer / Roles Admin:** `0xD079b77f43caf354b494299e7c0316e02cD79384`
 - **Platform Treasury:** `0x079D9c349741C27565ee04e31E4174F640F512aE`
-- **Allowlisted Stablecoin:**
-  - Circle USDC: `0x5425890298aed601595a70AB815c96711a31Bc65` (Permit: true, Min: 5 USDC, Cap: 1,000 USDC, TVL Cap: 50,000 USDC)
+- **Allowlisted Stablecoins:**
+  - MockUSDC: `0x2874C7e0C9B27029455f2a46D2332acE7C749DA9` (Permit: false, Min: 0.1 USDC, Cap: 1,000 USDC, TVL Cap: 50,000 USDC)
+  - MockUSDT: `0xad76726fb9de507811c2aa6721a6d23cbffc9f67` (Permit: false, Min: 0.1 USDT, Cap: 1,000 USDT, TVL Cap: 50,000 USDT)
+  - Circle USDC: `0x5425890298aed601595a70AB815c96711a31Bc65` (Permit: true, Min: 0.1 USDC, Cap: 1,000 USDC, TVL Cap: 50,000 USDC)
 - **Parameters:** Commission 10% (1000 bps), Dispute Bond 5% (500 bps, min floor 10 USDC), Dispute Window 72h, Arbitration Window 96h.

@@ -13,7 +13,7 @@ async function main() {
   console.log("MockUSDT deployed to:", usdtAddr);
 
   // Allowlist on GuideBloc
-  const guideblocAddr = "0x2D4eC9380218C252F9468078b35F90B559331d19";
+  const guideblocAddr = "0xD39883b0C1b6AdFa31d92431141D8d7DD9e8e4AB";
   const gb = await ethers.getContractAt("GuideBloc", guideblocAddr);
 
   console.log("Allowlisting MockUSDT on GuideBloc...");

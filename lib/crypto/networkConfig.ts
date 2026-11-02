@@ -26,7 +26,7 @@ export const NETWORKS = {
     nativeCurrency: { name: "AVAX", symbol: "AVAX", decimals: 18 },
     
     // Fuji Smart Contract Addresses
-    escrowContractAddress: "0x2D4eC9380218C252F9468078b35F90B559331d19",
+    escrowContractAddress: "0xD39883b0C1b6AdFa31d92431141D8d7DD9e8e4AB",
     usdcTokenAddress: "0x2874C7e0C9B27029455f2a46D2332acE7C749DA9",
     usdtTokenAddress: "0xad76726fb9de507811c2aa6721a6d23cbffc9f67",
     circleUsdcAddress: "0x5425890298aed601595a70AB815c96711a31Bc65",

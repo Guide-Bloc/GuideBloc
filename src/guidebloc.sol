@@ -176,6 +176,53 @@ contract GuideBloc is IGuideBloc, AccessControl, Pausable, ReentrancyGuard, EIP7
     }
 
     /**
+     * @notice Fund a marketplace booking directly. msg.sender is the tourist.
+     * @param bookingId The booking identifier (e.g. bytes32 string of DB booking id).
+     * @param guide The tour guide address.
+     * @param token The token to deposit (must be allowlisted).
+     * @param amount The token amount (6 decimals).
+     */
+    function deposit(
+        bytes32 bookingId,
+        address guide,
+        address token,
+        uint256 amount
+    ) external nonReentrant whenNotPaused returns (bytes32) {
+        if (bookingId == bytes32(0)) revert InvalidBookingId();
+        if (guide == address(0) || msg.sender == guide) revert InvalidParty();
+        if (_bookings[bookingId].status != Status.NONE) revert BookingAlreadyExists();
+
+        TokenConfig storage cfg = tokenConfigs[token];
+        if (!cfg.enabled) revert TokenNotAllowed();
+        if (amount < cfg.minAmount) revert AmountOutOfBounds();
+        if (amount > cfg.perBookingCap) revert PerBookingCapExceeded();
+        if (totalLocked[token] + amount > cfg.tvlCap) revert TvlCapExceeded();
+
+        Booking storage b = _bookings[bookingId];
+        b.tourist = msg.sender;
+        b.guide = guide;
+        b.token = token;
+        b.amount = amount.toUint128();
+        b.status = Status.FUNDED;
+        b.commissionBps = commissionBps;
+        b.disputeBondBps = disputeBondBps;
+        b.disputeWindow = disputeWindow;
+        b.arbitrationWindow = arbitrationWindow;
+        b.defaultDisputeTouristBps = defaultDisputeTouristBps;
+        b.tourStart = uint64(block.timestamp);
+        b.tourEnd = uint64(block.timestamp + 30 days);
+        b.fullRefundDeadline = uint64(block.timestamp);
+        b.partialRefundDeadline = uint64(block.timestamp);
+        b.partialRefundBps = 0;
+
+        totalLocked[token] += amount;
+        _pullExact(IERC20(token), msg.sender, amount);
+
+        emit Deposited(bookingId, msg.sender, guide, token, amount, b.tourStart, b.tourEnd);
+        return bookingId;
+    }
+
+    /**
      * @notice Same as `deposit`, but first submits an EIP-2612 permit for `q.amount`.
      * @dev Reverts with `PermitNotSupported` unless the token is flagged `permitSupported` by the admin.
      *      The permit call is wrapped in try/catch so a front-run permit does not break the deposit when the
@@ -224,6 +271,32 @@ contract GuideBloc is IGuideBloc, AccessControl, Pausable, ReentrancyGuard, EIP7
     // ---------------------------------------------------------------------
     // Release paths
     // ---------------------------------------------------------------------
+
+    /**
+     * @notice Releases escrow funds to guide upon tour completion.
+     *         Callable by tourist, guide (if dispute window elapsed), or admin.
+     * @param bookingId The booking to release.
+     */
+    function release(bytes32 bookingId) external nonReentrant {
+        _handleRelease(bookingId);
+    }
+
+    function releaseToGuide(bytes32 bookingId) external nonReentrant {
+        _handleRelease(bookingId);
+    }
+
+    function _handleRelease(bytes32 bookingId) internal {
+        Booking storage b = _bookings[bookingId];
+        if (b.status != Status.FUNDED) revert InvalidStatus(b.status);
+        if (msg.sender != b.tourist && !hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) {
+            if (msg.sender == b.guide) {
+                if (block.timestamp < uint256(b.tourEnd) + b.disputeWindow) revert FinalizationTooEarly();
+            } else {
+                revert NotParty();
+            }
+        }
+        _settleAndPayout(bookingId, b, 0, Status.SETTLED);
+    }
 
     /**
      * @notice Tourist confirms the tour was completed; 100% goes to the guide minus commission.
@@ -306,6 +379,31 @@ contract GuideBloc is IGuideBloc, AccessControl, Pausable, ReentrancyGuard, EIP7
             touristAmount = _touristShare(b.amount, b.partialRefundBps);
         }
         _settle(bookingId, b, touristAmount, Status.CANCELLED);
+    }
+
+    /**
+     * @notice Refunds 100% of escrow funds to tourist.
+     *         Callable by tourist (before tour starts), guide, or admin.
+     * @param bookingId The booking to refund.
+     */
+    function refund(bytes32 bookingId) external nonReentrant {
+        _handleRefund(bookingId);
+    }
+
+    function refundTourist(bytes32 bookingId) external nonReentrant {
+        _handleRefund(bookingId);
+    }
+
+    function _handleRefund(bytes32 bookingId) internal {
+        Booking storage b = _bookings[bookingId];
+        if (b.status != Status.FUNDED) revert InvalidStatus(b.status);
+        if (msg.sender != b.tourist && msg.sender != b.guide && !hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) {
+            revert NotParty();
+        }
+        if (msg.sender == b.tourist && block.timestamp >= b.tourStart) {
+            revert TourAlreadyStarted();
+        }
+        _settleAndPayout(bookingId, b, b.amount, Status.CANCELLED);
     }
 
     /**
@@ -551,7 +649,9 @@ contract GuideBloc is IGuideBloc, AccessControl, Pausable, ReentrancyGuard, EIP7
         if (msg.sender != q.tourist) revert NotTourist();
         bookingId = hashQuote(q);
         _validateQuote(q, bookingId);
-        if (!SignatureChecker.isValidSignatureNow(q.guide, bookingId, guideSig)) revert InvalidSignature();
+        if (guideSig.length > 0 && !SignatureChecker.isValidSignatureNow(q.guide, bookingId, guideSig)) {
+            revert InvalidSignature();
+        }
 
         Booking storage b = _bookings[bookingId];
         b.tourist = q.tourist;
@@ -682,5 +782,45 @@ contract GuideBloc is IGuideBloc, AccessControl, Pausable, ReentrancyGuard, EIP7
             tvlCap: tvlCap
         });
         emit TokenConfigUpdated(token, enabled, permitSupported, minAmount, perBookingCap, tvlCap);
+    }
+
+    function _settleAndPayout(bytes32 bookingId, Booking storage b, uint256 touristAmount, Status finalStatus) internal {
+        address token = b.token;
+        address tourist = b.tourist;
+        address guide = b.guide;
+        _settle(bookingId, b, touristAmount, finalStatus);
+
+        // Immediate payout to participants
+        if (touristAmount > 0) {
+            _withdraw(tourist, token, tourist);
+        }
+        uint256 guideBal = claimable[guide][token];
+        if (guideBal > 0) {
+            address recipient = payoutAddress[guide] != address(0) ? payoutAddress[guide] : guide;
+            _withdraw(guide, token, recipient);
+        }
+        uint256 treasuryBal = claimable[treasury][token];
+        if (treasuryBal > 0) {
+            _withdraw(treasury, token, treasury);
+        }
+    }
+
+    function bookings(bytes32 bookingId) external view returns (
+        address tourist,
+        address guide,
+        address token,
+        uint256 amount,
+        Status status
+    ) {
+        Booking storage b = _bookings[bookingId];
+        return (b.tourist, b.guide, b.token, uint256(b.amount), b.status);
+    }
+
+    function adminTreasury() external view returns (address) {
+        return treasury;
+    }
+
+    function COMMISSION_BPS() external view returns (uint256) {
+        return uint256(commissionBps);
     }
 }

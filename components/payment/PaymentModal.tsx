@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   X, Loader2, CheckCircle2, AlertCircle, ArrowLeft, 
   ShieldCheck, Copy, AlertTriangle, QrCode, 
@@ -118,6 +118,23 @@ export default function PaymentModal({
   const [selectedAccountAddress, setSelectedAccountAddress] = useState<string>("");
   const [browserProvider, setBrowserProvider] = useState<ethers.BrowserProvider | null>(null);
 
+  // Auto-connect if Web3 wallet is already authorized in browser
+  useEffect(() => {
+    if (isOpen && typeof window !== "undefined" && (window as any).ethereum) {
+      fetchConnectedAccountsDetails(selectedNetwork, amount, "metamask", selectedToken)
+        .then((res) => {
+          if (res.accounts && res.accounts.length > 0) {
+            setConnectedAccounts(res.accounts);
+            setSelectedAccountAddress(res.selectedAddress || res.accounts[0].address);
+            setBrowserProvider(res.provider);
+            setStep("select_account");
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isOpen]);
+
+
   const [inputTxHash, setInputTxHash] = useState("");
   const [verifying, setVerifying] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
@@ -189,7 +206,7 @@ export default function PaymentModal({
     }
   };
 
-  const handleExecutePayment = async () => {
+    const handleExecutePayment = async () => {
     if (!browserProvider || !selectedAccountAddress) {
       toast.error("Please select a Web3 account first");
       return;
@@ -206,148 +223,77 @@ export default function PaymentModal({
 
     setStep("processing");
     setVerifyStage(1);
-    const toastId = toast.loading(`Initiating Zero-Gas Sponsored Payment with ${selectedToken}...`);
+    const toastId = toast.loading(`Confirming ${selectedToken} Escrow Payment in wallet...`);
 
     try {
       let finalTxHash = "";
+      const signer = await browserProvider.getSigner(selectedAccountAddress);
+      const tokenAddress = getTokenAddress(selectedToken, selectedNetwork);
+      const escrowAddress = getEscrowAddress(selectedNetwork);
+      const amountUnits = ethers.parseUnits(safeAmountStr, 6);
 
-      // 0. Pre-trip EIP-712 Typed Data Agreement Signature
-      if (bookingId && browserProvider && selectedAccountAddress) {
-        try {
-          toast.loading("Step 1/3: Signing pre-trip agreement terms via EIP-712...", { id: toastId });
-          const { buildBookingAgreementTypedData } = await import("@/lib/crypto/eip712");
-          const typedData = buildBookingAgreementTypedData({
-            bookingId,
-            gigTitle: gigTitle || "Tour Experience",
-            totalPriceUSD: numAmount,
-            bookingDate: bookingDate || new Date().toISOString(),
-            touristAddress: selectedAccountAddress,
-            nonce: Date.now(),
-          });
+      const resolvedGuide = guideAddress && ethers.isAddress(guideAddress) 
+        ? guideAddress 
+        : process.env.NEXT_PUBLIC_PLATFORM_TREASURY || "0x079D9c349741C27565ee04e31E4174F640F512aE";
 
-          const signature = await browserProvider.send("eth_signTypedData_v4", [
-            selectedAccountAddress.toLowerCase(),
-            JSON.stringify(typedData),
-          ]);
+      const erc20Abi = [
+        "function approve(address spender, uint256 amount) external returns (bool)",
+        "function allowance(address owner, address spender) external view returns (uint256)",
+        "function transfer(address to, uint256 amount) external returns (bool)",
+      ];
 
-          if (signature) {
-            await fetch(`/api/bookings/${bookingId}/sign`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                signature,
-                touristAddress: selectedAccountAddress,
-                nonce: typedData.message.nonce,
-              }),
-            });
-            console.log("[PaymentModal] EIP-712 pre-trip agreement signed successfully.");
-          }
-        } catch (signErr: any) {
-          console.warn("[PaymentModal] EIP-712 non-blocking signature notice:", signErr.message);
-          if (signErr.message?.includes("User rejected") || signErr.message?.includes("denied")) {
-            throw new Error("Pre-trip agreement signature was declined. Please sign the agreement terms in your wallet to proceed.");
-          }
-        }
-      }
+      const escrowAbi = [
+        "function deposit(bytes32 bookingId, address guide, address token, uint256 amount) external returns (bytes32)",
+        "function release(bytes32 bookingId) external",
+      ];
 
-      // 1. High-Security Verifying Gasless Paymaster Flow (0 AVAX Needed)
-      if (bookingId && selectedToken === "USDC") {
-        try {
-          toast.loading("Step 2/3: Authorizing permit in wallet (0 Gas Fee)...", { id: toastId });
-          setVerifyStage(2);
-          const gaslessResult = await executeGaslessSponsoredPayment({
-            bookingId,
-            amountUSD: numAmount,
-            network: selectedNetwork,
-            walletType: selectedWalletType,
-          });
-          finalTxHash = gaslessResult.txHash;
-        } catch (gaslessErr: any) {
-          console.warn("Gasless execution notice, attempting direct fallback:", gaslessErr.message);
-          if (gaslessErr.message?.includes("User rejected") || gaslessErr.message?.includes("denied") || gaslessErr.message?.includes("Security Violation")) {
-            throw gaslessErr;
-          }
-        }
-      }
+      const tokenContract = new ethers.Contract(tokenAddress, erc20Abi, signer);
+      const escrowContract = new ethers.Contract(escrowAddress, escrowAbi, signer);
 
-      // 2. Direct on-chain fallback if needed
-      if (!finalTxHash) {
-        const signer = await browserProvider.getSigner(selectedAccountAddress);
-        const tokenAddress = getTokenAddress(selectedToken, selectedNetwork);
-        const escrowAddress = getEscrowAddress(selectedNetwork);
-        const amountUnits = ethers.parseUnits(safeAmountStr, 6);
-
-        const resolvedGuide = guideAddress && ethers.isAddress(guideAddress) 
-          ? guideAddress 
-          : process.env.NEXT_PUBLIC_PLATFORM_TREASURY || "0x079D9c349741C27565ee04e31E4174F640F512aE";
-
-        const erc20Abi = [
-          "function approve(address spender, uint256 amount) external returns (bool)",
-          "function allowance(address owner, address spender) external view returns (uint256)",
-          "function transfer(address to, uint256 amount) external returns (bool)",
-        ];
-
-        const escrowAbi = [
-          "function deposit(bytes32 bookingId, address guide, address token, uint256 amount) external",
-          "function createBooking(bytes32 bookingId, address guide, address token, uint256 amount) external",
-        ];
-
-        const tokenContract = new ethers.Contract(tokenAddress, erc20Abi, signer);
-        const escrowContract = new ethers.Contract(escrowAddress, escrowAbi, signer);
-
+      // Check current allowance - if already approved, skip approval popup completely!
+      const currentAllowance = await tokenContract.allowance(selectedAccountAddress, escrowAddress).catch(() => BigInt(0));
+      if (currentAllowance < amountUnits) {
         setVerifyStage(1);
         toast.loading(`Step 1/2: Approving ${selectedToken} for Escrow...`, { id: toastId });
-
-        // Check current allowance
-        const currentAllowance = await tokenContract.allowance(selectedAccountAddress, escrowAddress).catch(() => BigInt(0));
-        if (currentAllowance < amountUnits) {
-          const approveTx = await tokenContract.approve(escrowAddress, amountUnits);
-          await approveTx.wait();
-        }
-
-        setVerifyStage(2);
-        toast.loading(`Step 2/2: Locking ${selectedToken} into Escrow...`, { id: toastId });
-
-        const bookingIdBytes32 = bookingId 
-          ? ethers.encodeBytes32String(bookingId.slice(0, 31)) 
-          : ethers.encodeBytes32String(`BK_${Date.now()}`.slice(0, 31));
-
-        try {
-          const tx = await escrowContract.deposit(
-            bookingIdBytes32,
-            resolvedGuide,
-            tokenAddress,
-            amountUnits
-          );
-          const receipt = await tx.wait();
-          if (!receipt || !receipt.hash) {
-            throw new Error("Deposit transaction succeeded but hash is missing.");
-          }
-          finalTxHash = receipt.hash;
-        } catch (escrowErr: any) {
-          console.error("Escrow deposit failed:", escrowErr);
-          throw new Error(escrowErr.reason || escrowErr.message || "Failed to execute escrow deposit on-chain.");
-        }
-
-        const verifyRes = await fetch("/api/payments/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            bookingId,
-            txHash: finalTxHash,
-            token: selectedToken,
-            network: selectedNetwork
-          })
-        }).catch(err => {
-          console.warn("Backend verify API non-blocking warning:", err);
-          return null;
-        });
-
-        if (verifyRes) {
-          const verifyData = await verifyRes.json().catch(() => ({}));
-          console.log("Backend verification status:", verifyData);
-        }
+        const approveTx = await tokenContract.approve(escrowAddress, ethers.MaxUint256);
+        await approveTx.wait();
       }
+
+      setVerifyStage(2);
+      toast.loading(`Step 2/2: Confirming ${selectedToken} Escrow deposit in wallet...`, { id: toastId });
+
+      const bookingIdBytes32 = bookingId 
+        ? ethers.encodeBytes32String(bookingId.slice(0, 31)) 
+        : ethers.encodeBytes32String(`BK_${Date.now()}`.slice(0, 31));
+
+      try {
+        const tx = await escrowContract.deposit(
+          bookingIdBytes32,
+          resolvedGuide,
+          tokenAddress,
+          amountUnits
+        );
+        const receipt = await tx.wait();
+        if (!receipt || !receipt.hash) {
+          throw new Error("Deposit transaction succeeded but hash is missing.");
+        }
+        finalTxHash = receipt.hash;
+      } catch (escrowErr: any) {
+        console.error("Escrow deposit failed:", escrowErr);
+        throw new Error(escrowErr.reason || escrowErr.message || "Failed to execute escrow deposit on-chain.");
+      }
+
+      // Non-blocking background verification sync
+      fetch("/api/payments/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bookingId,
+          txHash: finalTxHash,
+          token: selectedToken,
+          network: selectedNetwork
+        })
+      }).catch(err => console.warn("Backend verify notice:", err));
 
       setVerifyStage(3);
       setTxHash(finalTxHash);
@@ -358,7 +304,7 @@ export default function PaymentModal({
     } catch (payErr: any) {
       toast.dismiss(toastId);
       console.error("Web3 payment error:", payErr);
-      setError(payErr.reason || payErr.message || "Web3 transaction was rejected or failed.");
+      setError(payErr.message || "Payment transaction was not completed.");
       setStep("error");
     }
   };

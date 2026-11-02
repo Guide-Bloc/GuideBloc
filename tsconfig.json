@@ -35,7 +35,10 @@
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "test",
+    "test-fork",
+    "typechain-types"
   ],
   "ts-node": {
     "compilerOptions": {

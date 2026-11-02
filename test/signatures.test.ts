@@ -53,7 +53,10 @@ describe("Signatures (EOA & ERC-1271 Contract Wallets)", () => {
     const bookingId = await fx.gb.hashQuote(q);
 
     // Deposit executed via smart wallet
-    const depositCalldata = fx.gb.interface.encodeFunctionData("deposit", [q, guideSig]);
+    const depositCalldata = fx.gb.interface.encodeFunctionData(
+      "deposit((address,address,address,uint256,uint64,uint64,uint64,uint64,uint16,uint64,bytes32),bytes)",
+      [q, guideSig]
+    );
     await touristWallet.connect(fx.tourist).execute(fx.gbAddr, depositCalldata);
 
     expect((await fx.gb.getBooking(bookingId)).status).to.equal(Status.FUNDED);

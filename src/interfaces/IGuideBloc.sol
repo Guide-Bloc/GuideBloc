@@ -174,4 +174,6 @@ interface IGuideBloc {
     error ValueOutOfBounds();
     error UnsupportedTokenDecimals();
     error InvalidTokenConfig();
+    error InvalidBookingId();
+    error InvalidParty();
 }

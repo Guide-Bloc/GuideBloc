@@ -93,6 +93,21 @@ export default function GigDetailPage() {
   const [passengerDetails, setPassengerDetails] = useState<any[]>([]);
   const [savedCompanions, setSavedCompanions] = useState<any[]>([]);
   const [currentBookingId, setCurrentBookingId] = useState<string | null>(null);
+  const [cachedProfile, setCachedProfile] = useState<any>(null);
+
+  useEffect(() => {
+    if (session?.user) {
+      fetch("/api/users/profile")
+        .then(r => r.ok ? r.json() : null)
+        .then(profile => {
+          if (profile) {
+            setCachedProfile(profile);
+            setSavedCompanions(profile.savedMembers || []);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [session]);
 
   useEffect(() => {
     if (session?.user) {
@@ -139,41 +154,49 @@ export default function GigDetailPage() {
       return;
     }
 
+    const populatePassengers = (profile: any) => {
+      setSavedCompanions(profile.savedMembers || []);
+
+      const list: any[] = [];
+      list.push({
+        isMainUser: true,
+        title: profile.title || "Mr",
+        name: profile.name || "",
+        passportNumber: profile.passportNumber || "",
+        idCardNumber: profile.idCardNumber || "",
+        birthDate: profile.birthDate ? profile.birthDate.split("T")[0] : "",
+        age: profile.age ? profile.age.toString() : "",
+      });
+
+      for (let i = 1; i < groupSize; i++) {
+        list.push({
+          isMainUser: false,
+          title: "Mr",
+          name: "",
+          passportNumber: "",
+          idCardNumber: "",
+          birthDate: "",
+          age: "",
+          selectedCompanionId: "",
+        });
+      }
+
+      setPassengerDetails(list);
+      setShowPassengerModal(true);
+    };
+
+    if (cachedProfile) {
+      populatePassengers(cachedProfile);
+      return;
+    }
+
     toast.loading("Loading passenger details...");
     try {
       const res = await fetch("/api/users/profile");
       if (res.ok) {
         const profile = await res.json();
-        setSavedCompanions(profile.savedMembers || []);
-
-        const list: any[] = [];
-        // Participant 1: The Main Tourist
-        list.push({
-          isMainUser: true,
-          title: profile.title || "Mr",
-          name: profile.name || "",
-          passportNumber: profile.passportNumber || "",
-          idCardNumber: profile.idCardNumber || "",
-          birthDate: profile.birthDate ? profile.birthDate.split("T")[0] : "",
-          age: profile.age ? profile.age.toString() : "",
-        });
-
-        // Additional Participants
-        for (let i = 1; i < groupSize; i++) {
-          list.push({
-            isMainUser: false,
-            title: "Mr",
-            name: "",
-            passportNumber: "",
-            idCardNumber: "",
-            birthDate: "",
-            age: "",
-            selectedCompanionId: "",
-          });
-        }
-
-        setPassengerDetails(list);
-        setShowPassengerModal(true);
+        setCachedProfile(profile);
+        populatePassengers(profile);
       } else {
         toast.error("Failed to load tourist profile");
       }
@@ -245,22 +268,18 @@ export default function GigDetailPage() {
     // Save main user's profile details if they edited them during checkout
     const mainUser = passengerDetails[0];
     if (mainUser) {
-      try {
-        await fetch("/api/users/profile", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: mainUser.name,
-            title: mainUser.title,
-            passportNumber: mainUser.passportNumber,
-            idCardNumber: mainUser.idCardNumber,
-            birthDate: mainUser.birthDate,
-            age: mainUser.age ? parseInt(mainUser.age) : null,
-          }),
-        });
-      } catch (err) {
-        console.error("Failed to sync main tourist profile:", err);
-      }
+      fetch("/api/users/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: mainUser.name,
+          title: mainUser.title,
+          passportNumber: mainUser.passportNumber,
+          idCardNumber: mainUser.idCardNumber,
+          birthDate: mainUser.birthDate,
+          age: mainUser.age ? parseInt(mainUser.age) : null,
+        }),
+      }).catch(err => console.warn("Background profile sync notice:", err));
     }
 
     // 1. Create a pending booking record in the database

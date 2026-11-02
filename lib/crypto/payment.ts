@@ -219,20 +219,21 @@ export async function connectWallet(
     throw new Error(`${walletName} is not detected. Please install ${walletName} or use a supported wallet.`);
   }
 
-  // Explicitly request permissions to show account selection dialog
+  // Check existing authorized accounts to avoid duplicate popups
+  let accounts: string[] = [];
   try {
     if (typeof rawProvider.request === "function") {
-      await rawProvider.request({
-        method: "wallet_requestPermissions",
-        params: [{ eth_accounts: {} }],
-      });
+      const existing = await rawProvider.request({ method: "eth_accounts" });
+      if (Array.isArray(existing) && existing.length > 0) {
+        accounts = existing;
+      }
     }
-  } catch (permError) {
-    console.log("wallet_requestPermissions skipped or dismissed:", permError);
-  }
+  } catch {}
 
   const provider = new ethers.BrowserProvider(rawProvider);
-  const accounts = await provider.send("eth_requestAccounts", []);
+  if (!accounts || accounts.length === 0) {
+    accounts = await provider.send("eth_requestAccounts", []);
+  }
 
   if (!accounts || accounts.length === 0) {
     throw new Error("No connected Web3 accounts found.");
@@ -286,56 +287,37 @@ export async function fetchConnectedAccountsDetails(
   walletType?: SupportedWalletType,
   selectedToken: "USDT" | "USDC" = "USDC"
 ): Promise<{ accounts: WalletAccountDetails[]; selectedAddress: string; provider: ethers.BrowserProvider }> {
-  const { address, provider, rawProvider } = await connectWallet(network, walletType);
-
-  let accountAddresses: string[] = [address];
-  try {
-    if (typeof rawProvider.request === "function") {
-      const allAccs = await rawProvider.request({ method: "eth_accounts" });
-      if (Array.isArray(allAccs) && allAccs.length > 0) {
-        accountAddresses = Array.from(new Set(allAccs));
-      }
-    }
-  } catch (err) {
-    console.warn("eth_accounts fetch failed, using primary account:", err);
-  }
+  const { address, provider } = await connectWallet(network, walletType);
 
   const tokenAddress = getTokenAddress(selectedToken, network);
-  const usdcContract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
+  const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
 
-  const accountDetailsList: WalletAccountDetails[] = await Promise.all(
-    accountAddresses.map(async (acc) => {
-      let ethBalStr = "0.00";
-      let usdcNum = 0;
-      let formattedUsdc = "0.00";
+  let ethBalStr = "0.00";
+  let usdcNum = 0;
+  let formattedUsdc = "0.00";
 
-      try {
-        const ethBal = await provider.getBalance(acc);
-        ethBalStr = parseFloat(ethers.formatEther(ethBal)).toFixed(4);
-      } catch (e) {
-        console.warn(`Failed to fetch ETH balance for ${acc}`, e);
-      }
+  try {
+    const [ethBal, tokenBal] = await Promise.all([
+      provider.getBalance(address).catch(() => BigInt(0)),
+      tokenContract.balanceOf(address).catch(() => BigInt(0)),
+    ]);
+    ethBalStr = parseFloat(ethers.formatEther(ethBal)).toFixed(4);
+    usdcNum = parseFloat(ethers.formatUnits(tokenBal, 6));
+    formattedUsdc = usdcNum.toFixed(2);
+  } catch (e) {
+    console.warn("Failed to fetch balance in parallel:", e);
+  }
 
-      try {
-        const usdcBal = await usdcContract.balanceOf(acc);
-        usdcNum = parseFloat(ethers.formatUnits(usdcBal, 6));
-        formattedUsdc = usdcNum.toFixed(2);
-      } catch (e) {
-        console.warn(`Failed to fetch USDC balance for ${acc}`, e);
-      }
-
-      return {
-        address: acc,
-        ethBalance: ethBalStr,
-        usdcBalance: usdcNum,
-        formattedUsdc,
-        hasEnoughBalance: usdcNum >= targetAmountUSD,
-      };
-    })
-  );
+  const primaryAccount: WalletAccountDetails = {
+    address,
+    ethBalance: ethBalStr,
+    usdcBalance: usdcNum,
+    formattedUsdc,
+    hasEnoughBalance: usdcNum >= targetAmountUSD,
+  };
 
   return {
-    accounts: accountDetailsList,
+    accounts: [primaryAccount],
     selectedAddress: address,
     provider,
   };
