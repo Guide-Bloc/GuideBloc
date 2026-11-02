@@ -54,4 +54,6 @@ graphify-out/
 .graphify/
 
 .agents/
+agent.md
+AGENT.md
 
