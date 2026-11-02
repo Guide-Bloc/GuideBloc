@@ -1230,7 +1230,13 @@ export default function GigDetailPage() {
       {/* Web3 Multi-Wallet Escrow Checkout Modal */}
       <PaymentModal
         isOpen={showWalletModal}
-        onClose={() => setShowWalletModal(false)}
+        onClose={() => {
+          if (currentBookingId) {
+            fetch(`/api/bookings/${currentBookingId}`, { method: "DELETE" }).catch(() => {});
+            setCurrentBookingId(null);
+          }
+          setShowWalletModal(false);
+        }}
         amount={totalPrice}
         token="USDC"
         gigTitle={gig?.title || "Tour Experience"}

@@ -141,6 +141,14 @@ export default function PaymentModal({
   const [error, setError] = useState<string | null>(null);
   const [verifyStage, setVerifyStage] = useState<1 | 2 | 3>(1);
 
+  const handleModalClose = () => {
+    // If closing before payment is completed, clean up unproved pending booking
+    if (step !== "success" && bookingId && !bookingId.startsWith("BK_")) {
+      fetch(`/api/bookings/${bookingId}`, { method: "DELETE" }).catch(() => {});
+    }
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   const escrowAddress = getEscrowAddress(selectedNetwork);
@@ -283,18 +291,6 @@ export default function PaymentModal({
         throw new Error(escrowErr.reason || escrowErr.message || "Failed to execute escrow deposit on-chain.");
       }
 
-      // Non-blocking background verification sync
-      fetch("/api/payments/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          bookingId,
-          txHash: finalTxHash,
-          token: selectedToken,
-          network: selectedNetwork
-        })
-      }).catch(err => console.warn("Backend verify notice:", err));
-
       setVerifyStage(3);
       setTxHash(finalTxHash);
       toast.dismiss(toastId);
@@ -306,6 +302,11 @@ export default function PaymentModal({
       console.error("Web3 payment error:", payErr);
       setError(payErr.message || "Payment transaction was not completed.");
       setStep("error");
+
+      // Clean up unproved pending booking if MetaMask was rejected or failed
+      if (bookingId && !bookingId.startsWith("BK_")) {
+        fetch(`/api/bookings/${bookingId}`, { method: "DELETE" }).catch(() => {});
+      }
     }
   };
 
@@ -391,7 +392,7 @@ export default function PaymentModal({
             </div>
 
             <button 
-              onClick={onClose} 
+              onClick={handleModalClose} 
               className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-dark-50 border border-dark-200 flex items-center justify-center text-dark-500 hover:text-dark-900 hover:bg-dark-100 transition-all cursor-pointer"
             >
               <X className="w-4 h-4" />

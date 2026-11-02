@@ -28,26 +28,20 @@ export async function GET(req: Request) {
 
     const expiredIds = expiredBookings.map((b) => b.id);
 
-    // Update status to EXPIRED
-    const updateRes = await prisma.booking.updateMany({
-      where: { id: { in: expiredIds } },
-      data: { status: "EXPIRED" }
-    });
-
-    // Create Audit Log Entries
-    await prisma.paymentAuditLog.createMany({
-      data: expiredIds.map((id) => ({
-        bookingId: id,
-        source: "CRON_EXPIRY",
-        status: "EXPIRED",
-        errorMessage: "Booking auto-expired after 24 hours inactivity."
-      }))
+    // Delete expired bookings completely to prevent DB clutter
+    const deleteRes = await prisma.booking.deleteMany({
+      where: {
+        OR: [
+          { status: "EXPIRED" },
+          { id: { in: expiredIds } },
+        ],
+      },
     });
 
     return NextResponse.json({
       success: true,
-      message: `Successfully auto-expired ${updateRes.count} pending bookings.`,
-      expiredCount: updateRes.count
+      message: `Successfully cleaned and deleted ${deleteRes.count} expired bookings.`,
+      expiredCount: deleteRes.count
     });
   } catch (error: any) {
     console.error("[Cron Auto-Expiry Error]", error);

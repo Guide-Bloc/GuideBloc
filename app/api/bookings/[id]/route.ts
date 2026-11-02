@@ -164,62 +164,66 @@ export async function PATCH(
     });
 
     if (status === "CONFIRMED" && booking.status !== "CONFIRMED" && booking.status !== "PAID") {
-      try {
-        const { generateReceiptPdf } = await import("@/lib/receipt");
-        const { triggerBookingSuccessEmail, triggerNewBookingForGuideEmail } = await import("@/lib/email");
+      // Execute receipt generation and notifications asynchronously in the background
+      // so the client receives the confirmation response immediately (<100ms) without waiting on SMTP.
+      (async () => {
+        try {
+          const { generateReceiptPdf } = await import("@/lib/receipt");
+          const { triggerBookingSuccessEmail, triggerNewBookingForGuideEmail } = await import("@/lib/email");
 
-        const effectiveNetwork = updatedBooking.paymentNetwork || paymentNetwork || "Avalanche C-Chain";
-        const effectiveTxHash = updatedBooking.txHash || txHash || "0x...";
+          const effectiveNetwork = updatedBooking.paymentNetwork || paymentNetwork || "Avalanche C-Chain";
+          const effectiveTxHash = updatedBooking.txHash || txHash || "0x...";
 
-        const pdfBuffer = generateReceiptPdf({
-          id: updatedBooking.id,
-          bookingDate: updatedBooking.bookingDate.toISOString(),
-          bookingTime: updatedBooking.bookingTime || "09:00 AM",
-          groupSize: updatedBooking.groupSize,
-          totalPriceUSD: updatedBooking.totalPriceUSD,
-          paymentNetwork: effectiveNetwork,
-          txHash: effectiveTxHash,
-          paymentMethod: "Web3 Smart Contract Escrow",
-          gig: { title: booking.gig.title, location: booking.gig.location },
-          tourist: { name: booking.tourist.name, email: booking.tourist.email },
-        });
-
-        // 1. Send receipt PDF to tourist
-        await triggerBookingSuccessEmail(
-          updatedBooking.id,
-          booking.tourist.email,
-          booking.gig.title,
-          updatedBooking.totalPriceUSD,
-          pdfBuffer
-        ).catch((err) => console.error("[Tourist Receipt Email Error]", err));
-
-        // 2. Send new booking order notification to tour guide
-        if (booking.gig?.guide?.email) {
-          const guideCommission = updatedBooking.platform_fee ?? updatedBooking.totalPriceUSD * 0.1;
-          const guideNetEarnings = updatedBooking.totalPriceUSD - guideCommission;
-          const bookingFormattedDate = new Date(updatedBooking.bookingDate).toLocaleDateString("en-US", {
-            weekday: "short",
-            month: "short",
-            day: "numeric",
-            year: "numeric",
+          const pdfBuffer = generateReceiptPdf({
+            id: updatedBooking.id,
+            bookingDate: updatedBooking.bookingDate.toISOString(),
+            bookingTime: updatedBooking.bookingTime || "09:00 AM",
+            groupSize: updatedBooking.groupSize,
+            totalPriceUSD: updatedBooking.totalPriceUSD,
+            paymentNetwork: effectiveNetwork,
+            txHash: effectiveTxHash,
+            paymentMethod: "Web3 Smart Contract Escrow",
+            gig: { title: booking.gig.title, location: booking.gig.location },
+            tourist: { name: booking.tourist.name, email: booking.tourist.email },
           });
 
-          await triggerNewBookingForGuideEmail(
-            booking.gig.guide.email,
-            booking.gig.guide.name || "Tour Guide",
-            booking.tourist.name || "A Traveler",
+          // 1. Send receipt PDF to tourist
+          await triggerBookingSuccessEmail(
+            updatedBooking.id,
+            booking.tourist.email,
             booking.gig.title,
-            bookingFormattedDate,
-            updatedBooking.bookingTime || "09:00 AM",
-            updatedBooking.groupSize,
             updatedBooking.totalPriceUSD,
-            guideNetEarnings,
-            updatedBooking.id
-          ).catch((err) => console.error("[Guide Notification Email Error]", err));
+            pdfBuffer
+          ).catch((err) => console.error("[Tourist Receipt Email Error]", err));
+
+          // 2. Send new booking order notification to tour guide
+          if (booking.gig?.guide?.email) {
+            const guideCommission = updatedBooking.platform_fee ?? updatedBooking.totalPriceUSD * 0.1;
+            const guideNetEarnings = updatedBooking.totalPriceUSD - guideCommission;
+            const bookingFormattedDate = new Date(updatedBooking.bookingDate).toLocaleDateString("en-US", {
+              weekday: "short",
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            });
+
+            await triggerNewBookingForGuideEmail(
+              booking.gig.guide.email,
+              booking.gig.guide.name || "Tour Guide",
+              booking.tourist.name || "A Traveler",
+              booking.gig.title,
+              bookingFormattedDate,
+              updatedBooking.bookingTime || "09:00 AM",
+              updatedBooking.groupSize,
+              updatedBooking.totalPriceUSD,
+              guideNetEarnings,
+              updatedBooking.id
+            ).catch((err) => console.error("[Guide Notification Email Error]", err));
+          }
+        } catch (emailErr) {
+          console.error("[Booking PATCH Email Error]", emailErr);
         }
-      } catch (emailErr) {
-        console.error("[Booking PATCH Email Error]", emailErr);
-      }
+      })();
     }
 
     // ─── COMPLETED: Record earnings and release hash ───────────
@@ -384,8 +388,10 @@ export async function PATCH(
       }
     }
 
-    // Update gig ranking score
-    await recalculateGigRankingScore(booking.gigId);
+    // Update gig ranking score in background
+    recalculateGigRankingScore(booking.gigId).catch((err) =>
+      console.warn("Ranking recalculate notice:", err)
+    );
 
     return NextResponse.json(updatedBooking);
   } catch (error) {
