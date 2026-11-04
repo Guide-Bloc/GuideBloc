@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { Calendar, CheckCircle, XCircle, Clock, Eye, X, Star, Loader2, ShieldCheck, QrCode } from "lucide-react";
+import { Calendar, CheckCircle, XCircle, Clock, Eye, X, Star, Loader2, ShieldCheck, QrCode, MapPin } from "lucide-react";
 import toast from "react-hot-toast";
 import DotsLoader from "@/components/ui/DotsLoader";
 import { useSession } from "next-auth/react";
@@ -44,6 +45,7 @@ export default function GuideBookingsPage() {
   const [verificationBookingModal, setVerificationBookingModal] = useState<any | null>(null);
   const [qrHandshakeBooking, setQrHandshakeBooking] = useState<any | null>(null);
   const { data: session } = useSession();
+  const router = useRouter();
 
   // Double Review system states
   const [reviewBooking, setReviewBooking] = useState<any | null>(null);
@@ -259,7 +261,14 @@ export default function GuideBookingsPage() {
                               </>
                             )}
                             {(b.status === "CONFIRMED" || b.status === "FUNDED" || b.status === "PAID") && (
-                              <div className="flex items-center gap-2">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <button
+                                  onClick={() => router.push(`/dashboard/meeting-point/${b.id}`)}
+                                  className="btn-ghost text-xs px-2.5 py-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-white rounded-lg font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition-all whitespace-nowrap"
+                                  title="Open Meeting Point & Live Location Radar"
+                                >
+                                  <MapPin className="w-3.5 h-3.5" /> Meeting Point
+                                </button>
                                 <button
                                   onClick={() => setQrHandshakeBooking(b)}
                                   className="btn-ghost text-xs px-2.5 py-1.5 bg-indigo-500/10 hover:bg-indigo-600 text-indigo-600 hover:text-white rounded-lg font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition-all"

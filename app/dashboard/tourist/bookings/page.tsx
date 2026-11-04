@@ -919,6 +919,18 @@ export default function TouristBookingsPage() {
                               {["CONFIRMED", "PAID", "FUNDED"].includes(booking.status) && (
                                 <button
                                   onClick={() => {
+                                    router.push(`/dashboard/meeting-point/${booking.id}`);
+                                    setOpenDropdownId(null);
+                                  }}
+                                  className="w-full text-left px-4 py-2.5 text-xs text-dark-100 hover:bg-dark-800 flex items-center gap-2 cursor-pointer font-medium transition-colors"
+                                >
+                                  <MapPin className="w-3.5 h-3.5 text-dark-400" /> Meeting Point
+                                </button>
+                              )}
+
+                              {["CONFIRMED", "PAID", "FUNDED"].includes(booking.status) && (
+                                <button
+                                  onClick={() => {
                                     setDisputeBooking(booking);
                                     setOpenDropdownId(null);
                                   }}
