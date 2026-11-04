@@ -104,6 +104,7 @@ model Gig {
   excluded     String[]
   benefits     String[]
   meetingPoint String?
+  meetingPointPhoto String?
   availableDays String[] @default(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])
   availableTimes String[] @default(["08:00 AM", "10:00 AM", "01:00 PM", "04:00 PM"])
   packages     Json?    // Custom tier packages (max 5) [{ id, name, priceUSD, description, includes }]
@@ -430,6 +431,8 @@ model MeetSession {
   guidePhoto             String?
   touristLocationUpdated DateTime?
   guideLocationUpdated   DateTime?
+  touristSharingExpiresAt DateTime?
+  guideSharingExpiresAt   DateTime?
   status                 String   @default("NOT_STARTED") // NOT_STARTED, SHARING, ARRIVED, COMPLETED
   createdAt              DateTime @default(now())
 

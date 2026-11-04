@@ -19,6 +19,46 @@ function getRpcUrl(network?: string | null): string {
   return getNetworkConfig().rpcUrl;
 }
 
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+      include: {
+        gig: {
+          include: {
+            guide: { select: { id: true, name: true, avatar: true, email: true } },
+          },
+        },
+        tourist: { select: { id: true, name: true, avatar: true, email: true } },
+        meetSession: true,
+      },
+    });
+
+    if (!booking) {
+      return NextResponse.json({ message: "Booking not found" }, { status: 404 });
+    }
+
+    const userId = (session.user as any).id;
+    const isOwner = booking.touristId === userId || booking.gig?.guideId === userId;
+    if (!isOwner) {
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+    }
+
+    return NextResponse.json(booking);
+  } catch (error) {
+    console.error("Booking GET error:", error);
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+  }
+}
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }

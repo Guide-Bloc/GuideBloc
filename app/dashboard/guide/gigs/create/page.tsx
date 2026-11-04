@@ -4,10 +4,10 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import toast from "react-hot-toast";
-import { 
-  Rocket, Info, Image as ImageIcon, MapPin, DollarSign, Clock, Users, X, 
-  FileText, Globe, Loader2, AlertCircle, Calendar, CheckCircle, XCircle, 
-  Languages as LanguagesIcon, Sparkles, Plus, Layers, Percent, Tag, Trash2, 
+import {
+  Rocket, Info, Image as ImageIcon, MapPin, Camera, DollarSign, Clock, Users, X,
+  FileText, Globe, Loader2, AlertCircle, Calendar, CheckCircle, XCircle,
+  Languages as LanguagesIcon, Sparkles, Plus, Layers, Percent, Tag, Trash2,
   CheckCircle2, ArrowRight, ArrowLeft, Eye, Compass, ShieldCheck
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -98,6 +98,9 @@ export default function CreateGigPage() {
     maxGroupSize: "8",
     location: "",
     meetingPoint: "",
+    meetingPointLat: "",
+    meetingPointLng: "",
+    meetingPointPhoto: "",
     category: "Adventure",
     country: "Indonesia",
     description: "",
@@ -522,6 +525,9 @@ export default function CreateGigPage() {
           location: formData.location,
           country: formData.country,
           meetingPoint: formData.meetingPoint,
+          lat: formData.meetingPointLat ? parseFloat(formData.meetingPointLat) : null,
+          lng: formData.meetingPointLng ? parseFloat(formData.meetingPointLng) : null,
+          meetingPointPhoto: formData.meetingPointPhoto || null,
           languages: selectedLanguages,
           included: aggregatedIncluded,
           excluded: aggregatedExcluded,
@@ -736,8 +742,8 @@ export default function CreateGigPage() {
                   <label className="block text-sm font-bold text-dark-800 mb-1.5">
                     Tour Title *
                   </label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="w-full p-3.5 bg-dark-50/50 border border-dark-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-dark-950 font-semibold text-base transition-all"
                     placeholder="e.g. Kyoto Golden Hour: Secret Bamboo Groves & Tea Tasting"
                     value={formData.title}
@@ -786,7 +792,7 @@ export default function CreateGigPage() {
                     <label className="block text-sm font-bold text-dark-800 mb-1.5">
                       Specific Location / City *
                     </label>
-                    <input 
+                    <input
                       type="text" 
                       className="w-full p-3.5 bg-dark-50/50 border border-dark-200 rounded-2xl focus:border-primary outline-none text-dark-950 font-medium"
                       placeholder="e.g. Kyoto, Japan or Ubud, Bali"
@@ -795,17 +801,71 @@ export default function CreateGigPage() {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-bold text-dark-800 mb-1.5 flex items-center gap-1.5">
-                      <MapPin className="w-4 h-4 text-emerald-600" /> Designated Meeting Point
-                    </label>
-                    <input 
-                      type="text" 
-                      className="w-full p-3.5 bg-dark-50/50 border border-dark-200 rounded-2xl focus:border-primary outline-none text-dark-950 font-medium"
-                      placeholder="e.g. In front of Hachiko Statue, Exit 8"
-                      value={formData.meetingPoint}
-                      onChange={e => setFormData({...formData, meetingPoint: e.target.value})}
-                    />
+                  <div className="space-y-4 pt-2 border-t border-dark-100">
+                    <div>
+                      <label className="block text-sm font-bold text-dark-800 mb-1.5 flex items-center gap-1.5">
+                        <MapPin className="w-4 h-4 text-emerald-600" /> Designated Meeting Point (Landmark / Address)
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full p-3.5 bg-dark-50/50 border border-dark-200 rounded-2xl focus:border-primary outline-none text-dark-950 font-medium"
+                        placeholder="e.g. In front of Hachiko Statue, Shibuya Exit 8"
+                        value={formData.meetingPoint}
+                        onChange={e => setFormData({...formData, meetingPoint: e.target.value})}
+                      />
+                      <p className="text-[11px] text-dark-400 mt-1">Specific landmark, gate, or building where you will meet your travelers.</p>
+                    </div>
+
+                    {/* Precise GPS Pin Coordinates */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-dark-700 mb-1">
+                          Meeting Point Latitude (GPS Pin)
+                        </label>
+                        <input
+                          type="number"
+                          step="any"
+                          className="w-full p-3 bg-dark-50/50 border border-dark-200 rounded-xl focus:border-primary outline-none text-dark-950 text-xs font-medium"
+                          placeholder="e.g. 35.6591 or -8.5069"
+                          value={formData.meetingPointLat}
+                          onChange={e => setFormData({...formData, meetingPointLat: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-dark-700 mb-1">
+                          Meeting Point Longitude (GPS Pin)
+                        </label>
+                        <input
+                          type="number"
+                          step="any"
+                          className="w-full p-3 bg-dark-50/50 border border-dark-200 rounded-xl focus:border-primary outline-none text-dark-950 text-xs font-medium"
+                          placeholder="e.g. 139.7006 or 115.2625"
+                          value={formData.meetingPointLng}
+                          onChange={e => setFormData({...formData, meetingPointLng: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-dark-400 -mt-2">Provides an exact pinpoint on Google Maps for both tourist and guide.</p>
+
+                    {/* Meeting Point Reference Photo */}
+                    <div>
+                      <label className="block text-xs font-bold text-dark-700 mb-1 flex items-center gap-1.5">
+                        <Camera className="w-3.5 h-3.5 text-primary" /> Meeting Point Reference Photo URL (Optional)
+                      </label>
+                      <input
+                        type="url"
+                        className="w-full p-3 bg-dark-50/50 border border-dark-200 rounded-xl focus:border-primary outline-none text-dark-950 text-xs font-medium"
+                        placeholder="https://... photo of meeting gate, signage, or landmark"
+                        value={formData.meetingPointPhoto}
+                        onChange={e => setFormData({...formData, meetingPointPhoto: e.target.value})}
+                      />
+                      <p className="text-[11px] text-dark-400 mt-1">A reference photo of the meeting spot so tourists can recognize it immediately on arrival.</p>
+                      {formData.meetingPointPhoto && (
+                        <div className="mt-2 w-28 h-20 rounded-xl overflow-hidden border border-dark-200 bg-dark-100">
+                          <img src={formData.meetingPointPhoto} alt="Meeting spot preview" className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

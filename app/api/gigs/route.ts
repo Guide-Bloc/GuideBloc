@@ -179,6 +179,9 @@ export async function POST(req: Request) {
         availableTimes: Array.isArray(data.availableTimes) && data.availableTimes.length > 0 
           ? data.availableTimes 
           : ["08:00 AM", "10:00 AM", "01:00 PM", "04:00 PM"],
+        lat: (data.lat !== undefined && data.lat !== null && data.lat !== "") ? parseFloat(String(data.lat)) : null,
+        lng: (data.lng !== undefined && data.lng !== null && data.lng !== "") ? parseFloat(String(data.lng)) : null,
+        meetingPointPhoto: data.meetingPointPhoto || null,
       },
     });
 

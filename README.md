@@ -114,6 +114,9 @@ npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+### Scheduled Meet Location Expiry
+Production deployments using Vercel run `/api/cron/meet-expiry` every five minutes via `vercel.json`. Set a strong `CRON_SECRET` environment variable in Vercel so the scheduled endpoint can authenticate. For other hosting providers, configure an equivalent five-minute scheduler that sends `Authorization: Bearer <CRON_SECRET>` to this endpoint.
+
 ---
 
 ## 🔒 License
