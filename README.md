@@ -1,8 +1,3 @@
-> [!WARNING]
-> ### 🚧 SYSTEM MAINTENANCE NOTICE
-> **The GuideBloc. platform is currently undergoing scheduled maintenance and active protocol migration.**
-> Production mainnet settlements are temporarily paused while contracts and services run on **Avalanche Fuji Testnet**. Local development environments are unaffected.
-
 <div align="center">
 
   <img src="https://www.guidebloc.com/assets/assemble.png" alt="GuideBloc. Logo" width="220" />
@@ -10,7 +5,7 @@
   # GuideBloc.
   ### Decentralized P2P travel gig marketplace built on Avalanche for local guide escrow bookings
 
-  [![Status](https://img.shields.io/badge/Status-Under%20Maintenance-FFA500?style=for-the-badge&logo=statuspage)](https://guidebloc.com)
+  [![Status](https://img.shields.io/badge/Status-Active%20%2F%20Live-brightgreen?style=for-the-badge&logo=statuspage)](https://guidebloc.com)
   [![Network](https://img.shields.io/badge/Active%20Chain-Avalanche%20Fuji%20Testnet-E84142?style=for-the-badge&logo=avalanche)](https://testnet.snowtrace.io)
   [![Next.js](https://img.shields.io/badge/Next.js-v15.5.28-black?style=for-the-badge&logo=nextdotjs)](https://nextjs.org)
   [![Database](https://img.shields.io/badge/Database-Neon%20Cloud%20PostgreSQL-00E599?style=for-the-badge&logo=postgresql)](https://neon.tech)

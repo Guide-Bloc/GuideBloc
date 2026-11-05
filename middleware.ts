@@ -13,10 +13,11 @@ export async function middleware(req: NextRequest) {
     host.startsWith("10.") ||
     process.env.NODE_ENV === "development";
 
-  // Maintenance is active on the real / deployed website by default, but disabled on local
+  // Maintenance mode is disabled by default so public users can access the platform.
+  // It is only enabled if explicitly set to "true" via environment variables.
   const isMaintenanceMode =
     process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true" ||
-    (!isLocal && process.env.MAINTENANCE_MODE !== "false");
+    process.env.MAINTENANCE_MODE === "true";
 
   // Admin secret bypass parameter or cookie
   const bypassParam = searchParams.get("bypass_maintenance");
