@@ -23,10 +23,7 @@ const guideLinks = [
   { href: "/dashboard/guide/overview", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/guide/gigs", label: "My Gigs", icon: FileText },
   { href: "/dashboard/guide/gigs/create", label: "Create Gig", icon: PlusCircle },
-  { href: "/dashboard/guide/bookings", label: "Bookings", icon: Calendar },
-  { href: "/dashboard/guide/messages", label: "Messages", icon: MessageSquare },
   { href: "/dashboard/guide/earnings", label: "Earnings", icon: TrendingUp },
-  { href: "/dashboard/guide/wallet", label: "Wallet", icon: Wallet },
   { href: "/dashboard/guide/profile", label: "Profile", icon: User },
 ];
 
@@ -168,6 +165,42 @@ export default function DashboardLayout({ children, role }: DashboardLayoutProps
               </Link>
             </div>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  const isPlainGuidePage = role === "guide" && (
+    pathname.startsWith("/dashboard/guide/bookings") ||
+    pathname.startsWith("/dashboard/guide/messages") ||
+    pathname.startsWith("/dashboard/guide/wallet")
+  );
+
+  if (role === "tourist" || isPlainGuidePage) {
+    return (
+      <div className="min-h-screen bg-dark-50">
+        <Navbar />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+          {warnings.length > 0 && (
+            <div className="space-y-3 mb-6 animate-in slide-in-from-top-4 duration-300">
+              {warnings.map((warn) => (
+                <div key={warn.id} className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-bold text-amber-900 text-sm">Account Warning Notice</h4>
+                    <p className="text-xs text-amber-850 mt-1 leading-relaxed font-semibold">{warn.reason}</p>
+                    <span className="text-[10px] text-amber-600 font-bold block mt-1.5">
+                      Received on {new Date(warn.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <main className="min-w-0">
+            {children}
+          </main>
         </div>
       </div>
     );

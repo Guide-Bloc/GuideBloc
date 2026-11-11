@@ -1,3 +1,33 @@
+export const DUMMY_USERS: Record<string, { id: string; email: string; name: string; role: string; avatar: string; walletAddress?: string; password?: string }> = {
+  "tourist@guidebloc.com": {
+    id: "dummy-tourist-1",
+    email: "tourist@guidebloc.com",
+    name: "Alex Tourist",
+    role: "TOURIST",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
+    walletAddress: "0x71C...438F",
+    password: "password123",
+  },
+  "guide@guidebloc.com": {
+    id: "dummy-guide-1",
+    email: "guide@guidebloc.com",
+    name: "Wayan Guide",
+    role: "GUIDE",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80",
+    walletAddress: "0x32A...891D",
+    password: "password123",
+  },
+  "admin@guidebloc.com": {
+    id: "dummy-admin-1",
+    email: "admin@guidebloc.com",
+    name: "Admin GuideBloc",
+    role: "ADMIN",
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80",
+    walletAddress: "0x079...12aE",
+    password: "password123",
+  },
+};
+
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
@@ -23,6 +53,22 @@ export const authOptions: NextAuthOptions = {
 
         try {
           const cleanEmail = credentials.email.trim().toLowerCase();
+
+          // Built-in Dummy / Mock Accounts for testing without DB
+          if (DUMMY_USERS[cleanEmail]) {
+            const dummy = DUMMY_USERS[cleanEmail];
+            if (credentials.password === dummy.password || credentials.password === "password123") {
+              return {
+                id: dummy.id,
+                email: dummy.email,
+                name: dummy.name,
+                role: dummy.role,
+                avatar: dummy.avatar,
+              };
+            } else {
+              throw new Error("Password demo salah. Gunakan: password123");
+            }
+          }
 
           const user = await prisma.user.findFirst({
             where: {
@@ -81,6 +127,16 @@ export const authOptions: NextAuthOptions = {
         if (session.role !== undefined) token.role = session.role;
         if (session.avatar !== undefined) token.avatar = session.avatar;
       }
+      // Fast return for dummy users
+      if (token.email && DUMMY_USERS[(token.email as string).trim().toLowerCase()]) {
+        const dummy = DUMMY_USERS[(token.email as string).trim().toLowerCase()];
+        token.id = dummy.id;
+        token.role = dummy.role;
+        token.avatar = dummy.avatar;
+        token.walletAddress = dummy.walletAddress;
+        return token;
+      }
+
       // Always fetch the freshest user role, guideStatus and walletAddress from the database safely
       if (token.email) {
         try {

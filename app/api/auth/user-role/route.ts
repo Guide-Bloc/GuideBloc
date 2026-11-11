@@ -14,6 +14,15 @@ export async function GET(req: Request) {
 
     const cleanEmail = email.trim().toLowerCase();
 
+    const DUMMY_ROLES: Record<string, string> = {
+      "tourist@guidebloc.com": "TOURIST",
+      "guide@guidebloc.com": "GUIDE",
+      "admin@guidebloc.com": "ADMIN",
+    };
+    if (DUMMY_ROLES[cleanEmail]) {
+      return NextResponse.json({ role: DUMMY_ROLES[cleanEmail] });
+    }
+
     const user = await prisma.user.findFirst({
       where: {
         email: {

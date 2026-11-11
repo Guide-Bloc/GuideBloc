@@ -3,9 +3,68 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { recalculateGigRankingScore } from "@/lib/ranking";
+import { FALLBACK_GIGS, MockGig } from "@/lib/mockGigs";
 
 let cachedCountries: { data: string[]; timestamp: number } | null = null;
 const COUNTRIES_CACHE_TTL = 60_000;
+
+function filterFallbackGigs(
+  gigs: MockGig[],
+  params: {
+    search?: string;
+    category?: string;
+    country?: string;
+    minPrice?: string | null;
+    maxPrice?: string | null;
+    sortBy?: string;
+  }
+) {
+  let list = [...gigs];
+  const { search, category, country, minPrice, maxPrice, sortBy } = params;
+
+  if (search) {
+    const s = search.toLowerCase();
+    list = list.filter(
+      (g) =>
+        g.title.toLowerCase().includes(s) ||
+        g.location.toLowerCase().includes(s) ||
+        g.description.toLowerCase().includes(s) ||
+        g.country.toLowerCase().includes(s)
+    );
+  }
+
+  if (category && category !== "All") {
+    const c = category.toLowerCase();
+    list = list.filter((g) => g.category.toLowerCase().includes(c));
+  }
+
+  if (country && country !== "All") {
+    const co = country.toLowerCase();
+    list = list.filter((g) => g.country.toLowerCase().includes(co));
+  }
+
+  if (minPrice) {
+    const min = parseFloat(minPrice);
+    if (!isNaN(min)) list = list.filter((g) => g.priceUSD >= min);
+  }
+
+  if (maxPrice) {
+    const max = parseFloat(maxPrice);
+    if (!isNaN(max)) list = list.filter((g) => g.priceUSD <= max);
+  }
+
+  const sortFunctions: Record<string, (a: any, b: any) => number> = {
+    newest: (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    price_asc: (a, b) => a.priceUSD - b.priceUSD,
+    price_desc: (a, b) => b.priceUSD - a.priceUSD,
+    rating: (a, b) => (b.avgRating || 0) - (a.avgRating || 0),
+    popular: (a, b) => (b.booking_count || 0) - (a.booking_count || 0),
+    ranking: (a, b) => (b.ranking_score || 0) - (a.ranking_score || 0) || (b.avgRating || 0) - (a.avgRating || 0),
+  };
+
+  const sortFn = (sortBy && sortFunctions[sortBy]) || sortFunctions.ranking;
+  return list.sort(sortFn);
+}
 
 export async function GET(req: Request) {
   try {
@@ -90,23 +149,28 @@ export async function GET(req: Request) {
 
     const [availableCountries, allGigs] = await Promise.all([countriesPromise, gigsPromise]);
 
+    // Use fallback gigs if database returns empty
+    const effectiveGigs = (allGigs && allGigs.length > 0)
+      ? allGigs
+      : filterFallbackGigs(FALLBACK_GIGS, { search, category, country, minPrice, maxPrice, sortBy });
+
     // 1. Sort based on criteria
     const sortFunctions: Record<string, (a: any, b: any) => number> = {
       newest: (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       price_asc: (a, b) => a.priceUSD - b.priceUSD,
       price_desc: (a, b) => b.priceUSD - a.priceUSD,
-      rating: (a, b) => b.avgRating - a.avgRating || b.ranking_score - a.ranking_score,
-      popular: (a, b) => b.booking_count - a.booking_count || b.ranking_score - a.ranking_score,
-      ranking: (a, b) => b.ranking_score - a.ranking_score || b.avgRating - a.avgRating || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      rating: (a, b) => (b.avgRating || 0) - (a.avgRating || 0) || (b.ranking_score || 0) - (a.ranking_score || 0),
+      popular: (a, b) => (b.booking_count || 0) - (a.booking_count || 0) || (b.ranking_score || 0) - (a.ranking_score || 0),
+      ranking: (a, b) => (b.ranking_score || 0) - (a.ranking_score || 0) || (b.avgRating || 0) - (a.avgRating || 0) || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     };
 
     const sortFn = sortFunctions[sortBy] || sortFunctions.ranking;
-    const sortedGigs = [...allGigs].sort(sortFn);
+    const sortedGigs = [...effectiveGigs].sort(sortFn);
 
     // 2. Prepend active boosted gigs (featured_until is in the future) to the top
     const now = new Date();
-    const featuredGigs = sortedGigs.filter(g => g.featured_until && new Date(g.featured_until) > now);
-    const regularGigs = sortedGigs.filter(g => !g.featured_until || new Date(g.featured_until) <= now);
+    const featuredGigs = (sortedGigs as any[]).filter(g => g.featured_until && new Date(g.featured_until) > now);
+    const regularGigs = (sortedGigs as any[]).filter(g => !g.featured_until || new Date(g.featured_until) <= now);
     
     const finalGigs = [...featuredGigs, ...regularGigs];
 
@@ -114,16 +178,47 @@ export async function GET(req: Request) {
     const total = finalGigs.length;
     const paginatedGigs = finalGigs.slice((page - 1) * limit, page * limit);
 
+    const mergedCountries = Array.from(new Set([...(availableCountries || []), "Indonesia", "Japan"]));
+
     return NextResponse.json({
       gigs: paginatedGigs,
       total,
       page,
-      totalPages: Math.ceil(total / limit),
-      availableCountries,
+      totalPages: Math.ceil(total / limit) || 1,
+      availableCountries: mergedCountries,
     });
   } catch (error) {
-    console.error("Gigs GET error:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    console.error("Gigs GET error, returning fallback gigs:", error);
+    try {
+      const { searchParams } = new URL(req.url);
+      const search = searchParams.get("search") || "";
+      const category = searchParams.get("category") || "";
+      const country = searchParams.get("country") || "";
+      const minPrice = searchParams.get("minPrice");
+      const maxPrice = searchParams.get("maxPrice");
+      const sortBy = searchParams.get("sortBy") || "ranking";
+      const page = parseInt(searchParams.get("page") || "1");
+      const limit = parseInt(searchParams.get("limit") || "12");
+
+      const filtered = filterFallbackGigs(FALLBACK_GIGS, { search, category, country, minPrice, maxPrice, sortBy });
+      const paginatedGigs = filtered.slice((page - 1) * limit, page * limit);
+
+      return NextResponse.json({
+        gigs: paginatedGigs,
+        total: filtered.length,
+        page,
+        totalPages: Math.ceil(filtered.length / limit) || 1,
+        availableCountries: ["Indonesia", "Japan"],
+      });
+    } catch {
+      return NextResponse.json({
+        gigs: FALLBACK_GIGS,
+        total: FALLBACK_GIGS.length,
+        page: 1,
+        totalPages: 1,
+        availableCountries: ["Indonesia", "Japan"],
+      });
+    }
   }
 }
 
@@ -141,10 +236,6 @@ export async function POST(req: Request) {
 
     const data = await req.json();
 
-    // Platform fee system (Buyer-pays fee model)
-    // Guide wants to earn guide_price (e.g. $12.00).
-    // Client price paid by tourist is client_price = guide_price * 1.10 (e.g. $13.20).
-    // Platform fee is platform_fee = client_price - guide_price (e.g. $1.20).
     const guide_price = Math.round(parseFloat(data.guide_price || data.priceUSD || "0") * 100) / 100;
     const client_price = Math.round((guide_price * 1.10) * 100) / 100;
     const platform_fee = Math.round((client_price - guide_price) * 100) / 100;

@@ -54,7 +54,9 @@ function LoginContent() {
         explicitCallback &&
         explicitCallback.startsWith("/") &&
         !explicitCallback.startsWith("/auth/login") &&
-        !explicitCallback.startsWith("/auth/callback")
+        !explicitCallback.startsWith("/auth/callback") &&
+        explicitCallback !== "/dashboard/tourist/bookings" &&
+        explicitCallback !== "/dashboard/guide/overview"
       ) {
         window.location.href = explicitCallback;
         return;
@@ -67,13 +69,10 @@ function LoginContent() {
         if (role === "ADMIN") {
           window.location.href = "/admin/dashboard";
           return;
-        } else if (role === "GUIDE") {
-          window.location.href = "/dashboard/guide/overview";
-          return;
         }
       }
 
-      window.location.href = "/dashboard/tourist/bookings";
+      window.location.href = "/explore";
     } catch (err: any) {
       console.error("[Login submit error]", err);
       setError(err?.message || "An unexpected error occurred. Please try again.");
@@ -82,7 +81,7 @@ function LoginContent() {
   };
 
   const handleGoogleSignIn = () => {
-    const callback = searchParams.get("callbackUrl") || "/dashboard/tourist/bookings";
+    const callback = searchParams.get("callbackUrl") || "/explore";
     signIn("google", { callbackUrl: callback });
   };
 
@@ -170,6 +169,8 @@ function LoginContent() {
               {error}
             </div>
           )}
+
+
 
           {/* Email / Password Form */}
           <form onSubmit={handleSubmit} className="space-y-4">

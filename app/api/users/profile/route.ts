@@ -12,6 +12,26 @@ export async function GET() {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
+    const userEmail = session.user?.email?.trim().toLowerCase();
+    if (userEmail && ["tourist@guidebloc.com", "guide@guidebloc.com", "admin@guidebloc.com"].includes(userEmail)) {
+      const u = session.user as any;
+      return NextResponse.json({
+        id: u.id || "dummy-id",
+        name: u.name || "Alex Tourist",
+        email: u.email,
+        walletAddress: "0x71C...438F",
+        bio: "Travel enthusiast exploring Web3 local guides.",
+        country: "Indonesia",
+        avatar: u.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
+        role: u.role || "TOURIST",
+        guideStatus: "NONE",
+        xp: 1500,
+        level: 2,
+        savedMembers: [],
+        warnings: [],
+      });
+    }
+
     const userId = (session.user as any).id;
     const dbUser = await prisma.user.findUnique({
       where: { id: userId },

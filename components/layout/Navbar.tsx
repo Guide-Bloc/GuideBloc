@@ -52,12 +52,31 @@ export default function Navbar() {
   const bleedPages = ["/", "/about", "/how-it-works", "/explore", "/freelancer", "/team", "/help-center", "/safety", "/terms-of-service", "/privacy-policy", "/cookie-policy"];
   const shouldShowSpacer = !bleedPages.includes(pathname);
 
-  const navLinks = [
-    { label: "Explore", href: "/explore" },
-    { label: "How It Works", href: "/how-it-works" },
-    { label: "About", href: "/about" },
-    { label: "For Guides", href: "/freelancer" },
-  ];
+  const isGuide = user?.role === "GUIDE";
+  const isAdmin = user?.role === "ADMIN";
+
+  const navLinks = session
+    ? [
+        { label: "Explore", href: "/explore" },
+        {
+          label: "My Booking",
+          href: isGuide ? "/dashboard/guide/bookings" : "/dashboard/tourist/bookings",
+        },
+        {
+          label: "Message",
+          href: isGuide ? "/dashboard/guide/messages" : "/dashboard/tourist/messages",
+        },
+        {
+          label: "Wallet",
+          href: isAdmin ? "/admin/wallet" : isGuide ? "/dashboard/guide/wallet" : "/dashboard/tourist/wallet",
+        },
+      ]
+    : [
+        { label: "Explore", href: "/explore" },
+        { label: "How It Works", href: "/how-it-works" },
+        { label: "About", href: "/about" },
+        { label: "For Guides", href: "/freelancer" },
+      ];
 
   return (
     <>
@@ -82,7 +101,7 @@ export default function Navbar() {
         {/* Central Menu Links */}
         <div className="hidden md:flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-full border border-white/5">
           {navLinks.map((link) => {
-            const isActive = pathname === link.href;
+            const isActive = pathname === link.href || (link.href !== "/" && link.href !== "/explore" && pathname.startsWith(link.href)) || (link.href === "/explore" && pathname.startsWith("/explore"));
             return (
               <Link
                 key={link.href}
@@ -105,13 +124,25 @@ export default function Navbar() {
           <ThemeToggle />
           {session ? (
             <>
-              <Link
-                href={user?.role === "ADMIN" ? "/admin/dashboard" : user?.role === "GUIDE" ? "/dashboard/guide/overview" : "/dashboard/tourist/bookings"}
-                className="text-white/80 hover:text-white hover:bg-white/10 px-4 py-2 border border-white/5 rounded-full flex items-center gap-2 text-xs font-semibold transition-all"
-              >
-                <LayoutDashboard className="w-3.5 h-3.5" />
-                Dashboard
-              </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin/dashboard"
+                  className="text-white/80 hover:text-white hover:bg-white/10 px-4 py-2 border border-white/5 rounded-full flex items-center gap-2 text-xs font-semibold transition-all"
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5" />
+                  Admin
+                </Link>
+              )}
+
+              {isGuide && (
+                <Link
+                  href="/dashboard/guide/overview"
+                  className="text-white/90 hover:text-white hover:bg-white/10 px-4 py-2 border border-white/5 rounded-full flex items-center gap-2 text-xs font-semibold transition-all"
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5" />
+                  Dashboard
+                </Link>
+              )}
 
               <div className="relative">
                 <button
@@ -142,13 +173,34 @@ export default function Navbar() {
                         <p className="text-[10px] text-white/50 truncate mt-0.5">{user?.email}</p>
                       </div>
                       
-                      <Link
-                        href={user?.role === "ADMIN" ? "/admin/dashboard" : user?.role === "GUIDE" ? "/dashboard/guide/overview" : "/dashboard/tourist/bookings"}
-                        className="flex items-center gap-2 px-4 py-2.5 text-xs text-white/70 hover:text-white hover:bg-white/5 transition-colors"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <LayoutDashboard className="w-4 h-4" /> Dashboard
-                      </Link>
+                      {user?.role === "ADMIN" ? (
+                        <Link
+                          href="/admin/dashboard"
+                          className="flex items-center gap-2 px-4 py-2.5 text-xs text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <LayoutDashboard className="w-4 h-4" /> Admin Dashboard
+                        </Link>
+                      ) : (
+                        <>
+                          {isGuide && (
+                            <Link
+                              href="/dashboard/guide/overview"
+                              className="flex items-center gap-2 px-4 py-2.5 text-xs text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                              onClick={() => setUserMenuOpen(false)}
+                            >
+                              <LayoutDashboard className="w-4 h-4" /> Dashboard
+                            </Link>
+                          )}
+                          <Link
+                            href={user?.role === "GUIDE" ? "/dashboard/guide/profile" : "/dashboard/tourist/profile"}
+                            className="flex items-center gap-2 px-4 py-2.5 text-xs text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                            onClick={() => setUserMenuOpen(false)}
+                          >
+                            <User className="w-4 h-4" /> Profile
+                          </Link>
+                        </>
+                      )}
                       
                       <Link
                         href={user?.role === "GUIDE" ? "/dashboard/guide/messages" : "/dashboard/tourist/messages"}
@@ -199,6 +251,16 @@ export default function Navbar() {
 
         {/* Mobile Action & Toggle Button */}
         <div className="flex md:hidden items-center gap-2">
+          {session && isGuide && (
+            <Link
+              href="/dashboard/guide/overview"
+              className="p-1.5 rounded-full hover:bg-white/10 text-white transition-colors flex items-center justify-center"
+              title="Dashboard"
+              aria-label="Guide Dashboard"
+            >
+              <LayoutDashboard className="w-4 h-4 text-white" />
+            </Link>
+          )}
           <ThemeToggle />
           <button
             className="p-2 rounded-full hover:bg-white/10 text-white transition-colors"
@@ -218,7 +280,7 @@ export default function Navbar() {
               className="absolute top-full left-0 right-0 mt-2.5 bg-dark-950/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 space-y-3 shadow-2xl z-50"
             >
               {navLinks.map((link) => {
-                const isActive = pathname === link.href;
+                const isActive = pathname === link.href || (link.href !== "/" && link.href !== "/explore" && pathname.startsWith(link.href)) || (link.href === "/explore" && pathname.startsWith("/explore"));
                 return (
                   <Link
                     key={link.href}
@@ -238,13 +300,34 @@ export default function Navbar() {
               <hr className="border-white/5" />
               {session ? (
                 <>
-                  <Link 
-                    href={user?.role === "ADMIN" ? "/admin/dashboard" : user?.role === "GUIDE" ? "/dashboard/guide/overview" : "/dashboard/tourist/bookings"} 
-                    className="block text-xs font-semibold py-2.5 px-4 rounded-xl text-white hover:bg-white/5"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    Dashboard
-                  </Link>
+                  {user?.role === "ADMIN" ? (
+                    <Link 
+                      href="/admin/dashboard" 
+                      className="block text-xs font-semibold py-2.5 px-4 rounded-xl text-white hover:bg-white/5"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      Admin Dashboard
+                    </Link>
+                  ) : (
+                    <>
+                      {isGuide && (
+                        <Link 
+                          href="/dashboard/guide/overview" 
+                          className="flex items-center gap-2 text-xs font-semibold py-2.5 px-4 rounded-xl text-white hover:bg-white/5"
+                          onClick={() => setMobileOpen(false)}
+                        >
+                          <LayoutDashboard className="w-4 h-4" /> Dashboard
+                        </Link>
+                      )}
+                      <Link 
+                        href={user?.role === "GUIDE" ? "/dashboard/guide/profile" : "/dashboard/tourist/profile"} 
+                        className="block text-xs font-semibold py-2.5 px-4 rounded-xl text-white hover:bg-white/5"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        Profile
+                      </Link>
+                    </>
+                  )}
                   <button 
                     onClick={() => { signOut({ callbackUrl: "/" }); setMobileOpen(false); }} 
                     className="block w-full text-left text-xs font-semibold py-2.5 px-4 rounded-xl text-red-400 hover:bg-white/5"

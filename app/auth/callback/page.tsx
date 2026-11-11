@@ -44,7 +44,9 @@ function CallbackContent() {
         explicitCallback &&
         explicitCallback.startsWith("/") &&
         !explicitCallback.startsWith("/auth/login") &&
-        !explicitCallback.startsWith("/auth/callback")
+        !explicitCallback.startsWith("/auth/callback") &&
+        explicitCallback !== "/dashboard/tourist/bookings" &&
+        explicitCallback !== "/dashboard/guide/overview"
       ) {
         window.location.href = explicitCallback;
         return;
@@ -56,20 +58,16 @@ function CallbackContent() {
         .then((data) => {
           if (data.role === "ADMIN") {
             window.location.href = "/admin/dashboard";
-          } else if (data.role === "GUIDE") {
-            window.location.href = "/dashboard/guide/overview";
           } else {
-            window.location.href = "/dashboard/tourist/bookings";
+            window.location.href = "/explore";
           }
         })
         .catch(() => {
           const userRole = (session.user as any)?.role;
           if (userRole === "ADMIN") {
             window.location.href = "/admin/dashboard";
-          } else if (userRole === "GUIDE") {
-            window.location.href = "/dashboard/guide/overview";
           } else {
-            window.location.href = "/dashboard/tourist/bookings";
+            window.location.href = "/explore";
           }
         });
     }

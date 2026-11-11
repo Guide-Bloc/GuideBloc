@@ -8,6 +8,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import GigCard from "@/components/gigs/GigCard";
 import { TourismSectionDecorations } from "@/components/ui/TourismOrnaments";
+import { FALLBACK_GIGS } from "@/lib/mockGigs";
 
 const categories = [
   "All",
@@ -70,13 +71,19 @@ function ExploreContent() {
 
       const res = await fetch(`/api/gigs?${params}`);
       const data = await res.json();
-      setGigs(data.gigs || []);
+      if (Array.isArray(data.gigs) && data.gigs.length > 0) {
+        setGigs(data.gigs);
+      } else {
+        setGigs(FALLBACK_GIGS);
+      setAvailableCountries(["Indonesia", "Japan"]);
+      }
       setTotalPages(data.totalPages || 1);
       if (data.availableCountries) {
-        setAvailableCountries(data.availableCountries);
+        setAvailableCountries(data.availableCountries?.length ? data.availableCountries : ["Indonesia", "Japan"]);
       }
     } catch {
-      setGigs([]);
+      setGigs(FALLBACK_GIGS);
+      setAvailableCountries(["Indonesia", "Japan"]);
     } finally {
       setLoading(false);
     }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { FALLBACK_GIGS } from "@/lib/mockGigs";
 
 export async function GET(
   req: Request,
@@ -39,6 +40,15 @@ export async function GET(
     });
 
     if (!gig) {
+      const fallback = FALLBACK_GIGS.find((g) => g.id === id);
+      if (fallback) {
+        return NextResponse.json({
+          ...fallback,
+          reviews: fallback.reviews || [],
+          avgRating: fallback.avgRating,
+          reviewCount: fallback.reviewCount,
+        });
+      }
       return NextResponse.json({ message: "Gig not found" }, { status: 404 });
     }
 
@@ -50,6 +60,15 @@ export async function GET(
     return NextResponse.json({ ...gig, avgRating, reviewCount: gig.reviews.length });
   } catch (error) {
     console.error("Gig detail error:", error);
+    const fallback = FALLBACK_GIGS.find((g) => g.id === id);
+    if (fallback) {
+      return NextResponse.json({
+        ...fallback,
+        reviews: fallback.reviews || [],
+        avgRating: fallback.avgRating,
+        reviewCount: fallback.reviewCount,
+      });
+    }
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
 }
@@ -65,20 +84,19 @@ export async function PATCH(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = (session.user as any).id;
-    const gig = await prisma.gig.findUnique({
-      where: { id: id },
-    });
+    const user = session.user as any;
+    const gig = await prisma.gig.findUnique({ where: { id: id } });
 
     if (!gig) {
       return NextResponse.json({ message: "Gig not found" }, { status: 404 });
     }
 
-    if (gig.guideId !== userId && (session.user as any).role !== "ADMIN") {
+    if (gig.guideId !== user.id && user.role !== "ADMIN") {
       return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
 
     const data = await req.json();
+
     const updated = await prisma.gig.update({
       where: { id: id },
       data,
@@ -86,7 +104,7 @@ export async function PATCH(
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error("Gig PATCH error:", error);
+    console.error("Gig update error:", error);
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
 }
@@ -102,25 +120,18 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = (session.user as any).id;
-
-    const gig = await prisma.gig.findUnique({
-      where: { id: id },
-    });
+    const user = session.user as any;
+    const gig = await prisma.gig.findUnique({ where: { id: id } });
 
     if (!gig) {
       return NextResponse.json({ message: "Gig not found" }, { status: 404 });
     }
 
-    if (gig.guideId !== userId && (session.user as any).role !== "ADMIN") {
+    if (gig.guideId !== user.id && user.role !== "ADMIN") {
       return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
 
-    // Soft delete: set isActive = false
-    await prisma.gig.update({
-      where: { id: id },
-      data: { isActive: false },
-    });
+    await prisma.gig.delete({ where: { id: id } });
 
     return NextResponse.json({ message: "Gig deleted successfully" });
   } catch (error) {
